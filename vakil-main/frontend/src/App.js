@@ -97,7 +97,8 @@ function AppContent() {
 }
 
 function App() {
-  const [preloaderDone, setPreloaderDone] = useState(false);
+  const skipPreloader = sessionStorage.getItem('skipPreloader') === '1';
+  const [preloaderDone, setPreloaderDone] = useState(skipPreloader);
 
   useEffect(() => {
     const lenis = new Lenis({

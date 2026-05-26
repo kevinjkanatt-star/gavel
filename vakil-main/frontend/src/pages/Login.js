@@ -72,10 +72,8 @@ const Login = () => {
         {/* Top: welcome text and form intro */}
         <div className="relative z-10 flex flex-col justify-center flex-1 px-16 text-white">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)' }}>
-              <Scale className="w-7 h-7" style={{ color: '#C9A84C' }} />
-            </div>
+            <img src="/logo.png" alt="Gavel & Brief" className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+              style={{ boxShadow: '0 0 20px rgba(201,168,76,0.35)' }} />
             <div>
               <h1 className="font-serif text-2xl font-bold text-white">Gavel &amp; Brief</h1>
               <p className="text-sm" style={{ color: 'rgba(201,168,76,0.8)' }}>Legal Intelligence Platform</p>

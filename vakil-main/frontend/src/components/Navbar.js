@@ -62,7 +62,7 @@ const Navbar = () => {
       data-testid="navbar"
     >
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')} data-testid="navbar-logo">
-        <Scale className="w-6 h-6" style={{ color: '#7C1D2B' }} />
+        <img src="/logo.png" alt="Gavel & Brief" className="w-8 h-8 rounded-lg object-cover" />
         <span className="font-serif text-lg font-bold tracking-tight text-foreground">Gavel &amp; Brief</span>
       </div>
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scale } from 'lucide-react';
 
 const Preloader = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
@@ -21,7 +20,7 @@ const Preloader = ({ onComplete }) => {
       } else {
         setTimeout(() => {
           setVisible(false);
-          setTimeout(onComplete, 600);
+          setTimeout(onComplete, 550);
         }, 200);
       }
     };
@@ -35,8 +34,8 @@ const Preloader = ({ onComplete }) => {
         <motion.div
           key="preloader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.04 }}
-          transition={{ duration: 0.55, ease: 'easeInOut' }}
+          exit={{ opacity: 0, scale: 1.03 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
           style={{ background: 'linear-gradient(135deg, #0f0a06 0%, #1e0c04 40%, #2a1208 100%)' }}
         >
@@ -46,13 +45,18 @@ const Preloader = ({ onComplete }) => {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col items-center gap-5"
           >
+            {/* Logo image */}
             <motion.div
-              animate={{ rotate: [0, -8, 8, -4, 4, 0] }}
-              transition={{ duration: 1.4, delay: 0.3, ease: 'easeInOut' }}
-              className="w-20 h-20 rounded-2xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #C9A84C, #f0c060)', boxShadow: '0 0 40px rgba(201,168,76,0.45)' }}
+              animate={{ rotate: [0, -6, 6, -3, 3, 0] }}
+              transition={{ duration: 1.6, delay: 0.4, ease: 'easeInOut' }}
+              className="w-24 h-24 rounded-2xl overflow-hidden flex items-center justify-center"
+              style={{ boxShadow: '0 0 48px rgba(201,168,76,0.5)' }}
             >
-              <Scale className="w-10 h-10 text-white" />
+              <img
+                src="/logo.png"
+                alt="Gavel & Brief"
+                className="w-full h-full object-cover"
+              />
             </motion.div>
 
             <div className="text-center">
@@ -82,13 +86,12 @@ const Preloader = ({ onComplete }) => {
             >
               <div className="w-full h-1.5 rounded-full overflow-hidden"
                 style={{ background: 'rgba(255,255,255,0.12)' }}>
-                <motion.div
-                  className="h-full rounded-full"
+                <div
+                  className="h-full rounded-full transition-all duration-100"
                   style={{
                     width: `${progress}%`,
                     background: 'linear-gradient(90deg, #C9A84C, #f0c060)',
                     boxShadow: '0 0 8px rgba(201,168,76,0.7)',
-                    transition: 'width 0.1s linear',
                   }}
                 />
               </div>
