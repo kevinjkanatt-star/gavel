@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Scale, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import Footer from '../components/Footer';
+import { Scale, Loader2, ArrowRight, Eye, EyeOff, PenLine } from 'lucide-react';
 
 function formatApiErrorDetail(detail) {
   if (detail == null) return 'Something went wrong. Please try again.';
@@ -53,6 +52,7 @@ const Login = () => {
     const creds = {
       lawyer: { email: 'lawyer@test.com', password: 'password123' },
       client: { email: 'client@test.com', password: 'password123' },
+      legal_writer: { email: 'writer@test.com', password: 'password123' },
     }[role];
     if (!creds) return;
     setEmail(creds.email);
@@ -62,49 +62,81 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex" data-testid="login-page">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      {/* Left decorative panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col"
+        style={{ background: 'linear-gradient(160deg, #7C1D2B 0%, #5a1420 50%, #3a0c18 100%)' }}>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
         </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <Scale className="w-16 h-16 text-amber-400 mb-8" />
-          <h1 className="font-heading text-5xl font-bold mb-6 leading-tight">
-            Welcome to
-            <span className="text-amber-400"> Gavel & Brief</span>
-          </h1>
-          <p className="text-xl text-slate-300 leading-relaxed mb-8">
-            India's most trusted legal services platform. Connect with expert lawyers and get AI-powered case analysis.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-slate-200">500+ Verified Lawyers</span>
+
+        {/* Top: welcome text and form intro */}
+        <div className="relative z-10 flex flex-col justify-center flex-1 px-16 text-white">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)' }}>
+              <Scale className="w-7 h-7" style={{ color: '#C9A84C' }} />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-slate-200">10,000+ Cases Resolved</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-slate-200">98% Client Satisfaction</span>
+            <div>
+              <h1 className="font-serif text-2xl font-bold text-white">Gavel &amp; Brief</h1>
+              <p className="text-sm" style={{ color: 'rgba(201,168,76,0.8)' }}>Legal Intelligence Platform</p>
             </div>
           </div>
+
+          <h2 className="font-serif text-4xl font-bold mb-4 leading-tight">
+            India's Most Trusted<br />Legal Platform
+          </h2>
+          <p className="text-base leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Connect with expert lawyers and get AI-powered case analysis in your language.
+          </p>
+
+          <div className="space-y-4 mb-10">
+            {[
+              '500+ Verified Lawyers across India',
+              '10,000+ Cases Resolved',
+              '98% Client Satisfaction',
+              'All 22 Indian Languages Supported',
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(201,168,76,0.25)' }}>
+                  <span style={{ color: '#C9A84C', fontWeight: 'bold', fontSize: 13 }}>✓</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom: description + disclaimer */}
+        <div className="relative z-10 px-16 pb-10 mt-auto">
+          <div className="rounded-xl p-5 mb-4" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Scale className="w-4 h-4" style={{ color: '#C9A84C' }} />
+              <p className="font-semibold text-white text-sm">About Gavel &amp; Brief</p>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              AI-powered legal intelligence connecting clients and lawyers through smart case analysis, document drafting, and predictive analytics.
+            </p>
+          </div>
+          <div className="rounded-xl p-4" style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <span className="font-semibold" style={{ color: 'rgba(201,168,76,0.9)' }}>Disclaimer:</span> Gavel &amp; Brief is an AI-assisted legal technology platform and does not constitute legal advice. All information is for informational purposes only. Please consult a qualified legal professional for advice specific to your situation.
+            </p>
+          </div>
+          <p className="text-center text-xs mt-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            © 2026 Gavel &amp; Brief. All rights reserved.
+          </p>
         </div>
       </div>
-      
+
+      {/* Right: login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="mb-8">
             <h2 className="font-heading text-4xl font-bold text-slate-900 mb-3" data-testid="login-heading">
               Welcome Back
             </h2>
-            <p className="text-slate-600 text-lg">Sign in to continue to Gavel & Brief</p>
+            <p className="text-slate-600 text-lg">Sign in to continue to Gavel &amp; Brief</p>
           </div>
 
           {error && (
@@ -115,14 +147,15 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} data-testid="login-form" className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-slate-900 focus:outline-none transition-colors text-slate-900"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none transition-colors text-slate-900"
+                style={{ '--tw-border-opacity': 1 }}
+                onFocus={e => e.target.style.borderColor = '#7C1D2B'}
+                onBlur={e => e.target.style.borderColor = ''}
                 placeholder="you@example.com"
                 required
                 data-testid="login-email-input"
@@ -130,15 +163,15 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 border-2 border-slate-200 rounded-lg focus:border-slate-900 focus:outline-none transition-colors text-slate-900"
+                  className="w-full px-4 py-3 pr-12 border-2 border-slate-200 rounded-lg focus:outline-none transition-colors text-slate-900"
+                  onFocus={e => e.target.style.borderColor = '#7C1D2B'}
+                  onBlur={e => e.target.style.borderColor = ''}
                   placeholder="••••••••"
                   required
                   data-testid="login-password-input"
@@ -156,19 +189,15 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ background: '#7C1D2B' }}
               disabled={loading}
               data-testid="login-submit-button"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin" />Signing in...</>
               ) : (
-                <>
-                  Sign In <ArrowRight className="w-5 h-5" />
-                </>
+                <>Sign In <ArrowRight className="w-5 h-5" /></>
               )}
             </button>
           </form>
@@ -184,26 +213,39 @@ const Login = () => {
                 </span>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleDemoLogin('lawyer')}
                 disabled={loading}
-                className="px-4 py-3 border-2 border-slate-200 hover:border-slate-900 rounded-lg text-sm font-semibold text-slate-700 transition-colors disabled:opacity-50"
+                className="px-3 py-3 border-2 border-slate-200 hover:border-slate-900 rounded-lg text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50 flex flex-col items-center gap-1"
                 data-testid="demo-lawyer-login"
               >
-                <Scale className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+                <Scale className="w-4 h-4" />
                 Demo Lawyer
               </button>
               <button
                 type="button"
                 onClick={() => handleDemoLogin('client')}
                 disabled={loading}
-                className="px-4 py-3 border-2 border-slate-200 hover:border-slate-900 rounded-lg text-sm font-semibold text-slate-700 transition-colors disabled:opacity-50"
+                className="px-3 py-3 border-2 border-slate-200 hover:border-slate-900 rounded-lg text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50 flex flex-col items-center gap-1"
                 data-testid="demo-client-login"
               >
-                <ArrowRight className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+                <ArrowRight className="w-4 h-4" />
                 Demo Client
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin('legal_writer')}
+                disabled={loading}
+                className="px-3 py-3 border-2 border-slate-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 flex flex-col items-center gap-1"
+                style={{ borderColor: 'rgba(124,29,43,0.3)', color: '#7C1D2B' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#7C1D2B'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(124,29,43,0.3)'}
+                data-testid="demo-writer-login"
+              >
+                <PenLine className="w-4 h-4" />
+                Demo Writer
               </button>
             </div>
             <p className="mt-3 text-xs text-center text-slate-500">
@@ -214,20 +256,19 @@ const Login = () => {
           <div className="mt-8 text-center">
             <p className="text-slate-600">
               Don't have an account?{' '}
-              <Link to="/register" className="text-amber-600 hover:text-amber-700 font-semibold" data-testid="login-register-link">
+              <Link to="/register" className="font-semibold hover:opacity-80" style={{ color: '#7C1D2B' }} data-testid="login-register-link">
                 Create one here
               </Link>
             </p>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200">
+          <div className="mt-6 pt-6 border-t border-slate-200">
             <Link to="/" className="text-slate-600 hover:text-slate-900 text-sm flex items-center justify-center gap-2">
               ← Back to Homepage
             </Link>
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

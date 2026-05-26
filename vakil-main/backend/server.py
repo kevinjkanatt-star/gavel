@@ -1721,13 +1721,53 @@ async def get_my_bookings(current_user: dict = Depends(get_current_user)):
 @api_router.put("/bookings/{booking_id}/cancel")
 async def cancel_booking(booking_id: str, current_user: dict = Depends(get_current_user)):
     try:
+        booking = await db.bookings.find_one({"_id": ObjectId(booking_id)})
         result = await db.bookings.update_one(
             {"_id": ObjectId(booking_id)},
             {"$set": {"status": "cancelled"}}
         )
         if result.modified_count == 0:
             raise HTTPException(status_code=404, detail="Booking not found")
+        if booking:
+            other_id = booking.get("client_id") if current_user["role"] == "lawyer" else booking.get("lawyer_id")
+            if other_id:
+                await create_notification(
+                    other_id,
+                    "Appointment Cancelled",
+                    f"Your appointment on {booking.get('scheduled_date', '')} at {booking.get('scheduled_time', '')} has been cancelled.",
+                    "consultation"
+                )
         return {"message": "Booking cancelled"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.put("/bookings/{booking_id}/accept")
+async def accept_booking(booking_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "lawyer":
+        raise HTTPException(status_code=403, detail="Only lawyers can accept bookings")
+    try:
+        booking = await db.bookings.find_one({"_id": ObjectId(booking_id)})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        result = await db.bookings.update_one(
+            {"_id": ObjectId(booking_id), "lawyer_id": current_user["id"]},
+            {"$set": {"status": "accepted", "accepted_at": datetime.now(timezone.utc)}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Booking not found or not authorized")
+        client_id = booking.get("client_id")
+        if client_id:
+            await create_notification(
+                client_id,
+                "Lawyer Accepted Your Booking! 🎉",
+                f"{current_user['name']} has accepted your appointment on {booking.get('scheduled_date', '')} at {booking.get('scheduled_time', '')}. You're all set!",
+                "consultation"
+            )
+        return {"message": "Booking accepted", "booking_id": booking_id}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3510,6 +3550,54 @@ async def mark_all_notifications_read(current_user: dict = Depends(get_current_u
     )
     return {"message": "All marked as read"}
 
+# ============ WRITING REQUESTS ============
+
+@api_router.post("/writing-requests")
+async def create_writing_request(request: dict, current_user: dict = Depends(get_current_user)):
+    """Client requests a legal content writer to draft a document"""
+    doc = {
+        "client_id": current_user["id"],
+        "client_name": current_user.get("name", ""),
+        "title": request.get("title", ""),
+        "description": request.get("description", ""),
+        "budget": request.get("budget", "To be discussed"),
+        "document_type": request.get("document_type", "affidavit"),
+        "affidavit_details": request.get("affidavit_details", {}),
+        "status": "open",
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.writing_requests.insert_one(doc)
+    open_writers = await db.legal_writers.find({"status": {"$ne": "inactive"}}).to_list(50)
+    for writer in open_writers:
+        await create_notification(
+            str(writer["_id"]),
+            "New Document Request",
+            f"{current_user['name']} needs a {doc['document_type']} drafted: {doc['title']}",
+            "info"
+        )
+    return {"id": str(result.inserted_id), "message": "Request submitted to legal content writers"}
+
+@api_router.get("/writing-requests")
+async def get_writing_requests(current_user: dict = Depends(get_current_user)):
+    """Get writing requests - writers see all open, clients see their own"""
+    if current_user.get("role") == "legal_writer":
+        requests = await db.writing_requests.find({"status": "open"}).sort("created_at", -1).to_list(50)
+    else:
+        requests = await db.writing_requests.find({"client_id": current_user["id"]}).sort("created_at", -1).to_list(50)
+    result = []
+    for r in requests:
+        result.append({
+            "id": str(r["_id"]),
+            "client_name": r.get("client_name", ""),
+            "title": r.get("title", ""),
+            "description": r.get("description", ""),
+            "budget": r.get("budget", ""),
+            "document_type": r.get("document_type", ""),
+            "status": r.get("status", "open"),
+            "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
+        })
+    return result
+
 async def create_notification(user_id: str, title: str, message: str, notif_type: str = "info"):
     """Helper to create a notification"""
     await db.notifications.insert_one({
@@ -4510,6 +4598,26 @@ async def startup_event():
                 await db.cases.insert_one(doc)
             logger.info(f"Seeded {len(demo_cases)} demo cases for testing")
     
+    # Seed demo legal writer account
+    test_writer_email = "writer@test.com"
+    existing_writer = await db.legal_writers.find_one({"email": test_writer_email})
+    if not existing_writer:
+        hashed_pw = bcrypt.hashpw("password123".encode(), bcrypt.gensalt()).decode()
+        writer_doc = {
+            "email": test_writer_email,
+            "name": "Demo Content Writer",
+            "password": hashed_pw,
+            "role": "legal_writer",
+            "specializations": ["affidavit", "legal notice", "contract", "petition"],
+            "languages": ["English", "Hindi", "Marathi"],
+            "bio": "Experienced legal content writer with expertise in drafting court documents, affidavits, legal notices, and contracts.",
+            "experience_years": 5,
+            "status": "active",
+            "created_at": datetime.now(timezone.utc),
+        }
+        await db.legal_writers.insert_one(writer_doc)
+        logger.info("Seeded demo legal writer: writer@test.com")
+
     # Write test credentials
     
     # Fix for Windows path
@@ -4526,6 +4634,10 @@ async def startup_event():
         f.write(f"Email: {test_lawyer_email}\n")
         f.write("Password: password123\n")
         f.write("Role: lawyer\n\n")
+        f.write("## Test Legal Writer\n")
+        f.write("Email: writer@test.com\n")
+        f.write("Password: password123\n")
+        f.write("Role: legal_writer\n\n")
     
     # Build TF-IDF indexes for semantic search
     global laws_vectorizer, laws_tfidf_matrix, laws_cache

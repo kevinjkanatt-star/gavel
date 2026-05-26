@@ -12,79 +12,6 @@ function checkWebGL() {
   } catch { return false; }
 }
 
-function CursorTrail() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
-    const resize = () => {
-      canvas.width = canvas.clientWidth * dpr;
-      canvas.height = canvas.clientHeight * dpr;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const history = [];
-    const MAX = 48;
-
-    const onMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      if (e.clientY < rect.top || e.clientY > rect.bottom) return;
-      history.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-      if (history.length > MAX) history.shift();
-    };
-    window.addEventListener('mousemove', onMove);
-
-    let raf;
-    const tick = () => {
-      const W = canvas.width / dpr, H = canvas.height / dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-
-      if (history.length > 1) {
-        // Draw a single smooth fading line through all history points
-        for (let i = 1; i < history.length; i++) {
-          const prog = i / history.length;
-          const alpha = Math.pow(prog, 1.8) * 0.9;
-          const lineWidth = 1.2 + prog * 2.0;
-
-          ctx.beginPath();
-          ctx.moveTo(history[i - 1].x, history[i - 1].y);
-          ctx.lineTo(history[i].x, history[i].y);
-          ctx.strokeStyle = `rgba(201,168,76,${alpha})`;
-          ctx.lineWidth = lineWidth;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.shadowColor = '#C9A84C';
-          ctx.shadowBlur = prog > 0.75 ? 10 : 0;
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        }
-
-        // Bright head dot at cursor tip
-        const head = history[history.length - 1];
-        ctx.beginPath();
-        ctx.arc(head.x, head.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,230,80,0.95)';
-        ctx.shadowColor = '#FFD700';
-        ctx.shadowBlur = 16;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-    return () => {
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMove);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 25 }} />;
-}
 
 function SoundBlock() {
   return (
@@ -459,7 +386,6 @@ export default function HeroSection() {
         )}
       </motion.div>
 
-      <CursorTrail />
 
       <motion.div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6 pointer-events-none"
         animate={isStruck ? 'dust' : 'visible'}>

@@ -10,3 +10,8 @@ Email: lawyer@test.com
 Password: password123
 Role: lawyer
 
+## Test Legal Writer
+Email: writer@test.com
+Password: password123
+Role: legal_writer
+

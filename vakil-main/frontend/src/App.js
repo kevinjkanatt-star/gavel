@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
@@ -8,6 +9,7 @@ import ChatWidget from './components/ChatWidget';
 import StatusWatcher from './components/StatusWatcher';
 import DigestWatcher from './components/DigestWatcher';
 import SurveyModal from './components/SurveyModal';
+import Preloader from './components/Preloader';
 import CaseDetailPage from './pages/CaseDetailPage';
 
 import Home from './pages/Home';
@@ -95,6 +97,8 @@ function AppContent() {
 }
 
 function App() {
+  const [preloaderDone, setPreloaderDone] = useState(false);
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -108,9 +112,12 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          {!preloaderDone && <Preloader onComplete={() => setPreloaderDone(true)} />}
+          {preloaderDone && <AppContent />}
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

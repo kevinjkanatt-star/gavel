@@ -316,7 +316,7 @@ const ClientHome = () => {
               }`}>
                 {isComplete ? <CheckCircle className="w-4 h-4" /> : i + 1}
               </div>
-              <span className={`text-xs hidden sm:inline ${isActive ? 'text-white font-medium' : 'text-slate-400'}`}>{labels[i]}</span>
+              <span className={`text-xs hidden sm:inline ${isActive ? 'text-white font-semibold' : 'text-slate-300'}`}>{labels[i]}</span>
               {i < phaseOrder.length - 1 && <ChevronRight className="w-4 h-4 text-slate-600 ml-2" />}
             </div>
           );
@@ -889,7 +889,7 @@ const ClientHome = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100" data-testid="client-home-page">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
           {/* Left Panel */}
           <div className="lg:col-span-2 lg:sticky lg:top-24 lg:self-start">

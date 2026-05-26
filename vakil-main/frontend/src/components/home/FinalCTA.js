@@ -28,17 +28,26 @@ export default function FinalCTA() {
             className="mb-6"
           >
             <Link to="/login">
-              <button
-                className="px-12 py-5 rounded-sm font-bold text-xl transition-all duration-300 hover:opacity-90 hover:shadow-2xl relative overflow-hidden group"
-                style={{ background: '#C9A84C', color: '#7C1D2B' }}
+              <motion.button
+                whileHover={{ scale: 1.06, boxShadow: '0 0 48px 12px rgba(201,168,76,0.55), 0 8px 32px rgba(201,168,76,0.4)' }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                className="px-14 py-5 rounded-sm font-bold text-xl relative overflow-hidden group"
+                style={{
+                  background: 'linear-gradient(135deg, #d4a832 0%, #f0c040 40%, #C9A84C 60%, #e8b830 100%)',
+                  color: '#7C1D2B',
+                  boxShadow: '0 0 28px 6px rgba(201,168,76,0.38), 0 4px 20px rgba(201,168,76,0.3)',
+                  textShadow: '0 1px 2px rgba(124,29,43,0.2)',
+                }}
               >
                 <span className="relative z-10 flex items-center gap-2">
                   Get Started
                   <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </span>
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              </motion.button>
             </Link>
           </motion.div>
 

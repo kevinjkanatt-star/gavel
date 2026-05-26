@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 const NODES = [
-  { cx: 200, cy: 55,  delay: 1.6, label: 'Contract',  labelX: 200, labelY: 32,  anchor: 'middle' },
-  { cx: 345, cy: 110, delay: 1.8, label: 'Criminal',  labelX: 362, labelY: 113, anchor: 'start'  },
-  { cx: 335, cy: 305, delay: 2.0, label: 'Corporate', labelX: 354, labelY: 309, anchor: 'start'  },
-  { cx: 82,  cy: 328, delay: 2.2, label: 'Property',  labelX: 63,  labelY: 332, anchor: 'end'    },
-  { cx: 72,  cy: 155, delay: 2.4, label: 'Family',    labelX: 53,  labelY: 158, anchor: 'end'    },
+  { cx: 200, cy: 55,  delay: 0.3, label: 'Contract',  labelX: 200, labelY: 32,  anchor: 'middle' },
+  { cx: 345, cy: 110, delay: 0.45, label: 'Criminal',  labelX: 368, labelY: 113, anchor: 'start'  },
+  { cx: 335, cy: 305, delay: 0.6,  label: 'Corporate', labelX: 358, labelY: 309, anchor: 'start'  },
+  { cx: 82,  cy: 328, delay: 0.75, label: 'Property',  labelX: 59,  labelY: 332, anchor: 'end'    },
+  { cx: 72,  cy: 155, delay: 0.9,  label: 'Family',    labelX: 49,  labelY: 158, anchor: 'end'    },
 ];
 
 export default function SmartCaseMatching() {
@@ -66,47 +66,55 @@ export default function SmartCaseMatching() {
               </filter>
             </defs>
 
+            {/* Dashed orbit rings */}
             <circle cx="200" cy="200" r="158" stroke="#C9A84C" strokeOpacity="0.14" strokeWidth="1" strokeDasharray="5 8" />
             <circle cx="200" cy="200" r="96" stroke="#C9A84C" strokeOpacity="0.11" strokeWidth="1" strokeDasharray="4 7" />
 
+            {/* Lines spreading out from center */}
             {NODES.map((n, i) => (
               <motion.line key={`line-${i}`} x1="200" y1="200" x2={n.cx} y2={n.cy}
-                stroke="#C9A84C" strokeOpacity="0.5" strokeWidth="1.1"
+                stroke="#C9A84C" strokeOpacity="0.55" strokeWidth="1.2"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
-                transition={{ duration: 1.0, delay: n.delay - 0.5, ease: 'easeInOut' }} />
+                transition={{ duration: 0.7, delay: n.delay, ease: 'easeOut' }} />
             ))}
 
+            {/* Center glow */}
             <motion.circle cx="200" cy="200" r="58" fill="url(#centerGlow)"
               initial={{ scale: 0, opacity: 0 }} animate={isInView ? { scale: 1, opacity: 1 } : {}}
-              transition={{ duration: 0.7, delay: 0.4 }} style={{ transformOrigin: '200px 200px' }} />
+              transition={{ duration: 0.5, delay: 0.1 }} style={{ transformOrigin: '200px 200px' }} />
 
+            {/* Center button */}
             <motion.circle cx="200" cy="200" r="30" fill="#7C1D2B" filter="url(#nodeShadow)"
-              initial={{ scale: 0 }} animate={isInView ? { scale: [0, 1.18, 1] } : {}}
-              transition={{ duration: 0.6, delay: 0.4, type: 'spring', stiffness: 200 }}
+              initial={{ scale: 0 }} animate={isInView ? { scale: [0, 1.15, 1] } : {}}
+              transition={{ duration: 0.5, delay: 0.1, type: 'spring', stiffness: 220 }}
               style={{ transformOrigin: '200px 200px', cursor: 'pointer' }}
               onClick={handleCenterClick} />
 
-            <motion.line x1="193" y1="200" x2="207" y2="200" stroke="rgba(255,255,255,0.5)" strokeWidth="2"
-              initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.85 }} style={{ pointerEvents: 'none' }} />
-            <motion.line x1="200" y1="193" x2="200" y2="207" stroke="rgba(255,255,255,0.5)" strokeWidth="2"
-              initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.85 }} style={{ pointerEvents: 'none' }} />
+            {/* Plus icon */}
+            <motion.line x1="193" y1="200" x2="207" y2="200" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5"
+              initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.4 }} style={{ pointerEvents: 'none' }} />
+            <motion.line x1="200" y1="193" x2="200" y2="207" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5"
+              initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.4 }} style={{ pointerEvents: 'none' }} />
 
+            {/* Pulse ring */}
             <motion.circle key={`pulse-${pulseKey}`} cx="200" cy="200" r="30" fill="none" stroke="#7C1D2B" strokeWidth="1.2"
-              animate={isInView ? { r: [30, 50, 30], opacity: [0.7, 0, 0.7] } : {}}
-              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 1.0 }} />
+              animate={isInView ? { r: [30, 52, 30], opacity: [0.7, 0, 0.7] } : {}}
+              transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut', delay: 0.8 }} />
 
+            {/* Nodes spreading out */}
             {NODES.map((n, i) => (
               <motion.g key={`node-${i}`}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={isInView ? { scale: 1, opacity: 1 } : {}}
-                transition={{ duration: 0.5, delay: n.delay, type: 'spring', stiffness: 180 }}
+                initial={{ scale: 0, opacity: 0, x: 200 - n.cx, y: 200 - n.cy }}
+                animate={isInView ? { scale: 1, opacity: 1, x: 0, y: 0 } : {}}
+                transition={{ duration: 0.55, delay: n.delay, type: 'spring', stiffness: 200, damping: 18 }}
                 style={{ transformOrigin: `${n.cx}px ${n.cy}px` }}>
-                <circle cx={n.cx} cy={n.cy} r="14" fill="none" stroke="#C9A84C" strokeWidth="2.2" filter="url(#goldGlow)" />
-                <circle cx={n.cx} cy={n.cy} r="11" fill="#f8f4ee" />
-                <circle cx={n.cx} cy={n.cy} r="3.5" fill="#C9A84C" opacity="0.65" />
-                <text x={n.labelX} y={n.labelY} textAnchor={n.anchor} fill="#7C1D2B" fontSize="9"
-                  fontFamily="serif" fontWeight="600" letterSpacing="0.08em">
+                <circle cx={n.cx} cy={n.cy} r="15" fill="none" stroke="#C9A84C" strokeWidth="2.2" filter="url(#goldGlow)" />
+                <circle cx={n.cx} cy={n.cy} r="12" fill="#f5f0ea" />
+                <circle cx={n.cx} cy={n.cy} r="4" fill="#C9A84C" opacity="0.8" />
+                <text x={n.labelX} y={n.labelY} textAnchor={n.anchor} fill="#7C1D2B" fontSize="9.5"
+                  fontFamily="serif" fontWeight="700" letterSpacing="0.07em"
+                  style={{ paintOrder: 'stroke', stroke: '#f8f4ee', strokeWidth: 3, strokeLinejoin: 'round' }}>
                   {n.label.toUpperCase()}
                 </text>
               </motion.g>
