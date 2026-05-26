@@ -62,7 +62,7 @@ const Navbar = () => {
       data-testid="navbar"
     >
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')} data-testid="navbar-logo">
-        <img src="/logo.png" alt="Gavel & Brief" className="w-8 h-8 rounded-lg object-cover" />
+        <img src="/logo.png" alt="Gavel & Brief" className="w-8 h-8 rounded-lg object-contain bg-transparent" />
         <span className="font-serif text-lg font-bold tracking-tight text-foreground">Gavel &amp; Brief</span>
       </div>
 

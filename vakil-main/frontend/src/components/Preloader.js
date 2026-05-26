@@ -55,7 +55,8 @@ const Preloader = ({ onComplete }) => {
               <img
                 src="/logo.png"
                 alt="Gavel & Brief"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
+                style={{ background: 'transparent' }}
               />
             </motion.div>
 

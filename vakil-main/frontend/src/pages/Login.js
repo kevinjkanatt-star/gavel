@@ -72,7 +72,7 @@ const Login = () => {
         {/* Top: welcome text and form intro */}
         <div className="relative z-10 flex flex-col justify-center flex-1 px-16 text-white">
           <div className="flex items-center gap-3 mb-8">
-            <img src="/logo.png" alt="Gavel & Brief" className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+            <img src="/logo.png" alt="Gavel & Brief" className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
               style={{ boxShadow: '0 0 20px rgba(201,168,76,0.35)' }} />
             <div>
               <h1 className="font-serif text-2xl font-bold text-white">Gavel &amp; Brief</h1>
