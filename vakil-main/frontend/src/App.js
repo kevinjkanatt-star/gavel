@@ -115,6 +115,20 @@ function App() {
     <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
+          {/* Global tiled pattern overlay — fixed behind all content */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundImage: `url(${process.env.PUBLIC_URL}/pattern.png)`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: '130px 130px',
+              opacity: 0.065,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
           {!preloaderDone && <Preloader onComplete={() => setPreloaderDone(true)} />}
           {preloaderDone && <AppContent />}
         </AuthProvider>
