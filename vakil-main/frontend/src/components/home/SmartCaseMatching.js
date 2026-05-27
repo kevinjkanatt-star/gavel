@@ -51,8 +51,8 @@ export default function SmartCaseMatching() {
           </motion.ul>
         </div>
 
-        <div className="lg:w-1/2 w-full max-w-[500px] mx-auto" style={{ aspectRatio: '1/1' }}>
-          <svg key={animKey} viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <div className="lg:w-1/2 w-full max-w-[520px] mx-auto" style={{ aspectRatio: '440/400' }}>
+          <svg key={animKey} viewBox="-20 -10 440 420" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
             <defs>
               <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="#9b2335" stopOpacity="0.6" />

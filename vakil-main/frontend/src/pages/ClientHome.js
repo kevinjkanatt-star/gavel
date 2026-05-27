@@ -302,22 +302,25 @@ const ClientHome = () => {
   //  RENDER PHASES
   // ═══════════════════════════════════════════════
 
-  const renderProgressBar = () => (
-    <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-5" data-testid="progress-bar">
-      <div className="flex items-center justify-between mb-3">
+  const renderProgressBar = () => {
+    const labels = ['Describe', 'Category', 'Questions', 'Analysis', 'NyayID'];
+    return (
+    <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-4" data-testid="progress-bar">
+      <div className="flex items-center justify-between mb-3 min-w-0">
         {phaseOrder.map((p, i) => {
           const isActive = i === phaseIndex;
           const isComplete = i < phaseIndex;
-          const labels = ['Describe', 'Category', 'Questions', 'Analysis', 'NyayID'];
           return (
-            <div key={p} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+            <div key={p} className="flex items-center min-w-0" style={{ flex: i < phaseOrder.length - 1 ? '1 1 0' : '0 0 auto' }}>
+              <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${
                 isComplete ? 'bg-amber-400 text-slate-900' : isActive ? 'bg-white text-slate-900' : 'bg-slate-600 text-slate-300'
               }`}>
-                {isComplete ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                {isComplete ? <CheckCircle className="w-3.5 h-3.5" /> : i + 1}
               </div>
-              <span className={`text-xs hidden sm:inline ${isActive ? 'text-white font-semibold' : 'text-slate-300'}`}>{labels[i]}</span>
-              {i < phaseOrder.length - 1 && <ChevronRight className="w-4 h-4 text-slate-600 ml-2" />}
+              <span className={`text-[10px] ml-1.5 whitespace-nowrap hidden sm:inline ${isActive ? 'text-white font-semibold' : 'text-slate-400'}`}>
+                {labels[i]}
+              </span>
+              {i < phaseOrder.length - 1 && <ChevronRight className="w-3 h-3 text-slate-600 flex-shrink-0 mx-1" />}
             </div>
           );
         })}
@@ -326,11 +329,12 @@ const ClientHome = () => {
         <motion.div
           className="h-full bg-amber-400"
           animate={{ width: `${((phaseIndex + 1) / phaseOrder.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
       </div>
     </div>
-  );
+    );
+  };
 
   // ─── PHASE: DESCRIBE ───
   const renderDescribePhase = () => (

@@ -705,13 +705,19 @@ function GavelScene({ onStrikeComplete }) {
   const sceneRef = useRef(null);
   const [isStriking, setIsStriking] = useState(false);
 
-  useFrame(({ mouse }) => {
+  useFrame(({ mouse, clock }) => {
     if (sceneRef.current) {
-      sceneRef.current.rotation.y = THREE.MathUtils.lerp(sceneRef.current.rotation.y, (mouse.x * Math.PI) / 20, 0.04);
-      sceneRef.current.rotation.x = THREE.MathUtils.lerp(sceneRef.current.rotation.x, (-mouse.y * Math.PI) / 38, 0.04);
+      /* Ultra-smooth parallax — lower lerp = more inertia */
+      sceneRef.current.rotation.y = THREE.MathUtils.lerp(
+        sceneRef.current.rotation.y, (mouse.x * Math.PI) / 22, 0.022);
+      sceneRef.current.rotation.x = THREE.MathUtils.lerp(
+        sceneRef.current.rotation.x, (-mouse.y * Math.PI) / 42, 0.022);
     }
     if (gavelRef.current && !isStriking) {
-      gavelRef.current.rotation.y += 0.0014;
+      /* Slow, stately idle rotation */
+      gavelRef.current.rotation.y += 0.001;
+      /* Subtle breathe — tiny up/down sine */
+      gavelRef.current.position.y = -0.5 + Math.sin(clock.getElapsedTime() * 0.5) * 0.025;
     }
   });
 
@@ -722,21 +728,29 @@ function GavelScene({ onStrikeComplete }) {
     const ripple = rippleRef.current;
 
     const tl = gsap.timeline({ onComplete: () => { setIsStriking(false); onStrikeComplete(); } });
-    tl.to(gavel.rotation, { z: -1.2, x: -0.1, duration: 0.16, ease: 'power2.in' });
-    tl.to(gavel.rotation, { z: 0.2, x: 0.72, duration: 0.2, ease: 'power4.in' });
-    tl.to(gavel.position, { y: -1.15, duration: 0.2, ease: 'power4.in' }, '<');
+    /* Wind-up — smooth power3 in */
+    tl.to(gavel.rotation, { z: -1.25, x: -0.12, duration: 0.18, ease: 'power3.in' });
+    /* Strike down — fast power4 */
+    tl.to(gavel.rotation, { z: 0.18, x: 0.75, duration: 0.19, ease: 'power4.in' });
+    tl.to(gavel.position, { y: -1.18, duration: 0.19, ease: 'power4.in' }, '<');
+    /* Impact effects */
     tl.add(() => {
-      ripple.scale.set(0.05, 0.05, 0.05);
-      ripple.material.opacity = 0.9;
-      gsap.to(ripple.scale, { x: 12, y: 12, z: 12, duration: 1.5, ease: 'power2.out' });
-      gsap.to(ripple.material, { opacity: 0, duration: 1.5, ease: 'power2.out' });
-      document.body.style.transform = 'translate(5px,5px)';
-      setTimeout(() => { document.body.style.transform = 'translate(-5px,-3px)'; }, 55);
-      setTimeout(() => { document.body.style.transform = 'translate(4px,-4px)'; }, 115);
-      setTimeout(() => { document.body.style.transform = 'translate(0,0)'; }, 175);
+      ripple.scale.set(0.04, 0.04, 0.04);
+      ripple.material.opacity = 0.95;
+      gsap.to(ripple.scale, { x: 14, y: 14, z: 14, duration: 1.8, ease: 'power2.out' });
+      gsap.to(ripple.material, { opacity: 0, duration: 1.8, ease: 'power2.out' });
+      /* Camera shake */
+      [
+        [55, 'translate(4px,4px)'],
+        [110, 'translate(-4px,-3px)'],
+        [165, 'translate(3px,-3px)'],
+        [220, 'translate(-2px,2px)'],
+        [275, 'translate(0,0)'],
+      ].forEach(([t, v]) => setTimeout(() => { document.body.style.transform = v; }, t));
     }, '-=0.02');
-    tl.to(gavel.rotation, { z: -0.72, x: 0.15, duration: 1.3, ease: 'elastic.out(1,0.34)' }, '+=0.06');
-    tl.to(gavel.position, { y: -0.5, duration: 1.0, ease: 'elastic.out(1,0.42)' }, '<');
+    /* Elastic bounce-back — tuned for smooth settle */
+    tl.to(gavel.rotation, { z: -0.72, x: 0.15, duration: 1.5, ease: 'elastic.out(1,0.3)' }, '+=0.05');
+    tl.to(gavel.position, { y: -0.5, duration: 1.2, ease: 'elastic.out(1,0.38)' }, '<');
   };
 
   window.triggerGavelStrike = handleStrike;
@@ -831,10 +845,20 @@ export default function HeroSection() {
     else handleStrikeComplete();
   };
 
+  /* Silky expo-out curve — snappy start, smooth landing */
+  const EASE_OUT = [0.16, 1, 0.3, 1];
+  const EASE_IN  = [0.4, 0, 1, 1];
+
   const wordVariants = {
-    hidden: { opacity: 0, y: 24, filter: 'blur(10px)' },
-    visible: (i) => ({ opacity: 1, y: 0, filter: 'blur(0px)', transition: { delay: i * 0.11, duration: 0.85, ease: 'easeOut' } }),
-    dust: { opacity: 0, y: -45, filter: 'blur(22px)', scale: 1.04, transition: { duration: 1.3, ease: 'easeIn' } },
+    hidden: { opacity: 0, y: 28, filter: 'blur(12px)' },
+    visible: (i) => ({
+      opacity: 1, y: 0, filter: 'blur(0px)',
+      transition: { delay: i * 0.09, duration: 1.0, ease: EASE_OUT },
+    }),
+    dust: {
+      opacity: 0, y: -50, filter: 'blur(24px)', scale: 1.03,
+      transition: { duration: 1.1, ease: EASE_IN },
+    },
   };
 
   return (
@@ -842,9 +866,21 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background z-[1] pointer-events-none" />
 
       <motion.div className="absolute inset-0 z-0"
-        animate={isStruck ? { opacity: 0, transition: { duration: 1.4, ease: 'easeIn' } } : { opacity: 1 }}>
+        animate={isStruck
+          ? { opacity: 0, filter: 'blur(6px)', transition: { duration: 1.6, ease: EASE_IN } }
+          : { opacity: 1, filter: 'blur(0px)' }}>
         {checkWebGL() ? (
-          <Canvas camera={{ position: [0, 1.5, 13], fov: 42 }} shadows gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
+          <Canvas
+            camera={{ position: [0, 1.5, 13], fov: 42 }}
+            shadows
+            dpr={[1, 2]}
+            gl={{
+              antialias: true,
+              alpha: true,
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.15,
+              powerPreference: 'high-performance',
+            }}>
             <GavelScene onStrikeComplete={handleStrikeComplete} />
           </Canvas>
         ) : (
@@ -852,39 +888,47 @@ export default function HeroSection() {
         )}
       </motion.div>
 
-      <motion.div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6 pointer-events-none"
-        animate={isStruck ? 'dust' : 'visible'}>
+      <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-6 pointer-events-none">
         <div className="max-w-4xl mx-auto mt-16">
-          <motion.h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foreground leading-[1.1] mb-6">
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foreground leading-[1.1] mb-6">
             {'Justice Powered by Intelligence'.split(' ').map((word, i) => (
               <motion.span key={i} custom={i} variants={wordVariants} initial="hidden"
                 animate={isStruck ? 'dust' : 'visible'}
                 className="inline-block mr-3 md:mr-4"
-                style={{ textShadow: '0 2px 20px rgba(255,255,255,0.6)' }}>
+                style={{ textShadow: '0 2px 24px rgba(255,255,255,0.55)' }}>
                 {word}
               </motion.span>
             ))}
-          </motion.h1>
+          </h1>
 
-          <motion.p className="text-xl md:text-2xl text-foreground/75 font-light mb-12"
-            variants={wordVariants} custom={5} initial="hidden" animate={isStruck ? 'dust' : 'visible'}>
+          <motion.p
+            className="text-xl md:text-2xl text-foreground/75 font-light mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isStruck
+              ? { opacity: 0, y: -40, filter: 'blur(16px)', transition: { duration: 0.9, ease: EASE_IN } }
+              : { opacity: 1, y: 0, filter: 'blur(0px)', transition: { delay: 0.54, duration: 1.0, ease: EASE_OUT } }}>
             Gavel &amp; Brief — The Future of Legal Technology
           </motion.p>
 
-          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-6 pointer-events-auto"
-            variants={wordVariants} custom={6} initial="hidden" animate={isStruck ? 'dust' : 'visible'}>
+          <motion.div
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 pointer-events-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isStruck
+              ? { opacity: 0, y: -30, transition: { duration: 0.7, ease: EASE_IN } }
+              : { opacity: 1, y: 0, transition: { delay: 0.7, duration: 0.9, ease: EASE_OUT } }}>
             <button onClick={triggerStrike}
               className="bg-primary text-primary-foreground px-9 py-4 rounded-sm font-semibold text-lg transition-all duration-500 hover:bg-primary/90 hover:shadow-2xl hover:shadow-primary/30 relative overflow-hidden group w-full sm:w-auto">
               <span className="relative z-10">Begin Experience</span>
               <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
             </button>
-            <button className="border border-foreground/20 text-foreground px-9 py-4 rounded-sm font-semibold text-lg transition-all duration-300 hover:bg-foreground/5 w-full sm:w-auto backdrop-blur-sm"
+            <button
+              className="border border-foreground/20 text-foreground px-9 py-4 rounded-sm font-semibold text-lg transition-all duration-500 hover:bg-foreground/5 hover:border-foreground/40 w-full sm:w-auto backdrop-blur-sm"
               onClick={() => { const s = document.getElementById('features'); if (s) s.scrollIntoView({ behavior: 'smooth' }); }}>
               Learn More
             </button>
           </motion.div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
