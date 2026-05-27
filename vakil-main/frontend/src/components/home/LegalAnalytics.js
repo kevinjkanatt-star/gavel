@@ -256,7 +256,7 @@ export default function LegalAnalytics() {
   ];
 
   return (
-    <section id="analytics" className="py-32 px-6 md:px-12 bg-background relative" ref={sectionRef}>
+    <section id="analytics" className="py-32 px-6 md:px-12 bg-transparent relative" ref={sectionRef}>
       <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8 }} className="text-center mb-16">
           <p className="text-xs uppercase tracking-[0.25em] text-accent font-semibold mb-4">05 — Legal Analytics</p>

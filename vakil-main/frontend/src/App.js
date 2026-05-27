@@ -111,25 +111,22 @@ function App() {
     return () => lenis.destroy();
   }, []);
 
+  useEffect(() => {
+    const url = `${process.env.PUBLIC_URL}/pattern.png`;
+    document.body.style.backgroundImage = `url(${url})`;
+    document.body.style.backgroundRepeat = 'repeat';
+    document.body.style.backgroundSize = '120px 120px';
+    return () => {
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundRepeat = '';
+      document.body.style.backgroundSize = '';
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
-          {/* Global tiled pattern overlay — multiply blend makes white transparent, gold lines show through */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundImage: `url(${process.env.PUBLIC_URL}/pattern.png)`,
-              backgroundRepeat: 'repeat',
-              backgroundSize: '130px 130px',
-              opacity: 0.28,
-              mixBlendMode: 'multiply',
-              pointerEvents: 'none',
-              zIndex: 9999,
-            }}
-          />
           {!preloaderDone && <Preloader onComplete={() => setPreloaderDone(true)} />}
           {preloaderDone && <AppContent />}
         </AuthProvider>

@@ -21,7 +21,7 @@ export default function SmartCaseMatching() {
   };
 
   return (
-    <section id="platform" className="py-32 px-6 md:px-12 bg-background relative overflow-hidden">
+    <section id="platform" className="py-32 px-6 md:px-12 bg-transparent relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse 60% 50% at 70% 50%, rgba(201,168,76,0.04) 0%, transparent 70%)' }} />
 

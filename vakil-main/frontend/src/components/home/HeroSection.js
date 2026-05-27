@@ -218,60 +218,148 @@ function JudgeBench() {
 }
 
 /* ─────────────────────────────────────────────
-   CORINTHIAN PILLAR
+   CORINTHIAN PILLAR — full detail
 ───────────────────────────────────────────── */
 function PillarWithFluting({ position, scale = 1 }) {
-  const FLUTES = 20;
-  const H = 10.0 * scale;
+  const FLUTES = 24;
+  const H = 10.2 * scale;
+  const S = scale;
+
+  /* shared stone material */
+  const stone = (lightness = 0) => ({
+    roughness: 0.48 + lightness * 0.08,
+    metalness: 0.0,
+    clearcoat: 0.35 - lightness * 0.05,
+    clearcoatRoughness: 0.22,
+    envMapIntensity: 0.55,
+  });
+
   return (
     <group position={position}>
-      {/* Shaft */}
+
+      {/* ── SHAFT with entasis (slight belly) via tapered cylinders ── */}
       <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.26 * scale, 0.33 * scale, H, 48]} />
-        <meshPhysicalMaterial color="#e0dbd2" roughness={0.55} metalness={0.0}
-          clearcoat={0.4} clearcoatRoughness={0.2} envMapIntensity={0.5} />
+        <cylinderGeometry args={[0.24 * S, 0.32 * S, H * 0.5, 52]} />
+        <meshPhysicalMaterial color="#e2ddd5" {...stone()} />
       </mesh>
-      {/* Fluting */}
+      <mesh position={[0, 0.5 + H * 0.25, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.23 * S, 0.24 * S, H * 0.5, 52]} />
+        <meshPhysicalMaterial color="#e2ddd5" {...stone()} />
+      </mesh>
+
+      {/* ── FLUTING — semicircular channels for authentic light-play ── */}
       {Array.from({ length: FLUTES }).map((_, i) => {
         const angle = (i / FLUTES) * Math.PI * 2;
-        const r = 0.28 * scale;
+        const r = 0.255 * S;
         return (
           <mesh key={i}
             position={[Math.sin(angle) * r, 0.5, Math.cos(angle) * r]}
-            rotation={[0, -angle, 0]} castShadow>
-            <boxGeometry args={[0.028 * scale, H - 0.5, 0.014 * scale]} />
-            <meshPhysicalMaterial color="#c8c2b4" roughness={0.7} metalness={0.0} clearcoat={0.2} />
+            rotation={[0, -angle + Math.PI / 2, 0]} castShadow>
+            <cylinderGeometry args={[0.018 * S, 0.018 * S, H - 0.6, 8, 1, false, 0, Math.PI]} />
+            <meshPhysicalMaterial color="#c6c0b0" roughness={0.65} metalness={0.0} clearcoat={0.15} />
           </mesh>
         );
       })}
-      {/* Capital */}
-      <group position={[0, H / 2 + 0.44, 0]}>
+
+      {/* ── CORINTHIAN CAPITAL ── */}
+      <group position={[0, H / 2 + 0.55, 0]}>
+        {/* Kalathos (bell-shaped core) */}
         <mesh castShadow>
-          <cylinderGeometry args={[0.48 * scale, 0.28 * scale, 0.42 * scale, 40]} />
-          <meshPhysicalMaterial color="#d8d2c4" roughness={0.5} metalness={0.0} clearcoat={0.3} />
+          <cylinderGeometry args={[0.52 * S, 0.26 * S, 0.72 * S, 44]} />
+          <meshPhysicalMaterial color="#d6d0c2" {...stone(0.1)} />
         </mesh>
-        <mesh position={[0, 0.33 * scale, 0]}>
-          <boxGeometry args={[1.0 * scale, 0.24 * scale, 1.0 * scale]} />
-          <meshPhysicalMaterial color="#d0c9ba" roughness={0.52} metalness={0.0} clearcoat={0.3} />
+
+        {/* Lower acanthus leaf tier — 8 leaves */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const a = (i / 8) * Math.PI * 2;
+          return (
+            <group key={i} position={[Math.sin(a) * 0.38 * S, -0.18 * S, Math.cos(a) * 0.38 * S]}
+              rotation={[-0.55, a + Math.PI, 0]}>
+              <mesh castShadow>
+                <coneGeometry args={[0.085 * S, 0.38 * S, 7]} />
+                <meshPhysicalMaterial color="#cdc7b6" roughness={0.52} metalness={0.0} clearcoat={0.2} />
+              </mesh>
+              {/* leaf tip curl */}
+              <mesh position={[0, 0.22 * S, 0.04 * S]} rotation={[0.6, 0, 0]}>
+                <torusGeometry args={[0.032 * S, 0.012 * S, 8, 14, Math.PI]} />
+                <meshPhysicalMaterial color="#c4beae" roughness={0.55} metalness={0.0} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {/* Upper acanthus leaf tier — 8 smaller leaves */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+          return (
+            <group key={i} position={[Math.sin(a) * 0.44 * S, 0.08 * S, Math.cos(a) * 0.44 * S]}
+              rotation={[-0.38, a + Math.PI, 0]}>
+              <mesh castShadow>
+                <coneGeometry args={[0.065 * S, 0.28 * S, 7]} />
+                <meshPhysicalMaterial color="#d0cabb" roughness={0.5} metalness={0.0} clearcoat={0.22} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {/* Volute scrolls — 4 corners */}
+        {[0, Math.PI / 2, Math.PI, Math.PI * 1.5].map((a, i) => (
+          <group key={i} position={[Math.sin(a) * 0.46 * S, 0.28 * S, Math.cos(a) * 0.46 * S]}
+            rotation={[0, a, 0]}>
+            <mesh>
+              <torusGeometry args={[0.075 * S, 0.022 * S, 12, 24, Math.PI * 1.5]} />
+              <meshPhysicalMaterial color="#c8c2b2" roughness={0.5} metalness={0.0} clearcoat={0.3} />
+            </mesh>
+            {/* Gold volute centre eye */}
+            <mesh position={[0.075 * S, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.014 * S, 0.014 * S, 0.012 * S, 12]} />
+              <meshPhysicalMaterial {...GOLD} clearcoat={0.9} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Abacus (flat top slab) — 3 layers */}
+        <mesh position={[0, 0.52 * S, 0]} castShadow>
+          <boxGeometry args={[1.12 * S, 0.13 * S, 1.12 * S]} />
+          <meshPhysicalMaterial color="#d0c9ba" {...stone(0.15)} />
         </mesh>
-        <mesh position={[0, 0.46 * scale, 0]}>
-          <boxGeometry args={[1.1 * scale, 0.12 * scale, 1.1 * scale]} />
-          <meshPhysicalMaterial color="#c8c2b4" roughness={0.55} metalness={0.0} clearcoat={0.25} />
+        <mesh position={[0, 0.62 * S, 0]}>
+          <boxGeometry args={[1.18 * S, 0.07 * S, 1.18 * S]} />
+          <meshPhysicalMaterial color="#c8c2b2" {...stone(0.2)} />
+        </mesh>
+        {/* Gold accent line on abacus edge */}
+        <mesh position={[0, 0.66 * S, 0]}>
+          <boxGeometry args={[1.2 * S, 0.018 * S, 1.2 * S]} />
+          <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.7} />
         </mesh>
       </group>
-      {/* Base */}
-      <group position={[0, -H / 2 + 0.1, 0]}>
+
+      {/* ── BASE — Attic base with torus moldings ── */}
+      <group position={[0, -H / 2 + 0.05, 0]}>
+        {/* Upper torus (scotiae) */}
         <mesh castShadow>
-          <torusGeometry args={[0.35 * scale, 0.082 * scale, 18, 36]} />
-          <meshPhysicalMaterial color="#d4cec0" roughness={0.55} metalness={0.0} clearcoat={0.3} />
+          <torusGeometry args={[0.34 * S, 0.075 * S, 20, 40]} />
+          <meshPhysicalMaterial color="#d2ccc0" {...stone(0.05)} />
         </mesh>
-        <mesh position={[0, -0.14 * scale, 0]}>
-          <cylinderGeometry args={[0.5 * scale, 0.5 * scale, 0.24 * scale, 36]} />
-          <meshPhysicalMaterial color="#ccc5b6" roughness={0.58} metalness={0.0} clearcoat={0.25} />
+        {/* Dado cylinder */}
+        <mesh position={[0, -0.16 * S, 0]}>
+          <cylinderGeometry args={[0.48 * S, 0.48 * S, 0.22 * S, 40]} />
+          <meshPhysicalMaterial color="#cac4b6" {...stone(0.1)} />
         </mesh>
-        <mesh position={[0, -0.33 * scale, 0]}>
-          <boxGeometry args={[1.12 * scale, 0.14 * scale, 1.12 * scale]} />
-          <meshPhysicalMaterial color="#c0b9aa" roughness={0.6} metalness={0.0} clearcoat={0.2} />
+        {/* Lower torus */}
+        <mesh position={[0, -0.28 * S, 0]}>
+          <torusGeometry args={[0.42 * S, 0.055 * S, 16, 36]} />
+          <meshPhysicalMaterial color="#c8c2b4" {...stone(0.12)} />
+        </mesh>
+        {/* Plinth (square base) */}
+        <mesh position={[0, -0.44 * S, 0]} castShadow>
+          <boxGeometry args={[1.1 * S, 0.2 * S, 1.1 * S]} />
+          <meshPhysicalMaterial color="#bdb7a8" {...stone(0.2)} />
+        </mesh>
+        {/* Gold plinth trim */}
+        <mesh position={[0, -0.35 * S, 0]}>
+          <boxGeometry args={[1.12 * S, 0.018 * S, 1.12 * S]} />
+          <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.6} />
         </mesh>
       </group>
     </group>
@@ -323,40 +411,83 @@ function ChainAssembly({ x, topY, panY, count = 14 }) {
 }
 
 function ScalePan({ x }) {
+  /* Concave bowl using stacked shrinking discs */
+  const BOWL_LAYERS = 7;
   return (
     <group position={[x, 0, 0]}>
-      {/* Outer rim ring */}
+      {/* Outer heavy rim ring */}
       <mesh castShadow>
-        <torusGeometry args={[0.38, 0.034, 24, 56]} />
-        <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.04} />
+        <torusGeometry args={[0.40, 0.042, 28, 64]} />
+        <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.03}
+          anisotropy={0.8} anisotropyRotation={0} />
       </mesh>
-      {/* Bowl — slightly concave disc */}
-      {[0, 1, 2, 3].map((i) => (
-        <mesh key={i} position={[0, -0.022 - i * 0.018, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.37 - i * 0.04, 0.37 - i * 0.04, 0.01, 44, 1, true]} />
-          <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.7} side={THREE.DoubleSide}
-            transparent opacity={0.95 - i * 0.05} />
-        </mesh>
-      ))}
-      {/* Base fill */}
-      <mesh position={[0, -0.1, 0]}>
-        <cylinderGeometry args={[0.18, 0.18, 0.016, 32]} />
-        <meshPhysicalMaterial {...GOLD} clearcoat={0.9} />
+      {/* Rim bevel inner edge */}
+      <mesh>
+        <torusGeometry args={[0.36, 0.018, 16, 56]} />
+        <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.8} clearcoatRoughness={0.05} />
       </mesh>
-      {/* Three suspension rods */}
-      {[0, Math.PI * 2 / 3, Math.PI * 4 / 3].map((angle, i) => (
-        <group key={i}>
-          <mesh position={[Math.sin(angle) * 0.33, 0.42, Math.cos(angle) * 0.33]}>
-            <cylinderGeometry args={[0.0065, 0.0065, 0.88, 10]} />
-            <meshPhysicalMaterial {...GOLD} clearcoat={0.7} />
+
+      {/* Deep concave bowl — layers of shrinking, descending discs */}
+      {Array.from({ length: BOWL_LAYERS }).map((_, i) => {
+        const t = i / (BOWL_LAYERS - 1);
+        const r = 0.38 * (1 - t * 0.72);
+        const y = -0.015 - t * t * 0.14;
+        return (
+          <mesh key={i} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[r - 0.028, r, 48]} />
+            <meshPhysicalMaterial
+              color={i === 0 ? '#b8920e' : '#C9A84C'}
+              roughness={0.06 + i * 0.04}
+              metalness={1.0}
+              envMapIntensity={3.5 - i * 0.3}
+              emissive="#C9A84C"
+              emissiveIntensity={0.03}
+              clearcoat={1.0}
+              clearcoatRoughness={0.03}
+              side={THREE.DoubleSide}
+            />
           </mesh>
-          {/* Small connector sphere */}
-          <mesh position={[Math.sin(angle) * 0.33, 0.02, Math.cos(angle) * 0.33]}>
-            <sphereGeometry args={[0.018, 14, 14]} />
-            <meshPhysicalMaterial {...GOLD} clearcoat={0.9} />
-          </mesh>
-        </group>
-      ))}
+        );
+      })}
+
+      {/* Bowl floor disc */}
+      <mesh position={[0, -0.155, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.095, 36]} />
+        <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.02}
+          emissive="#C9A84C" emissiveIntensity={0.05} />
+      </mesh>
+
+      {/* Three suspension chains — with connector rings */}
+      {[0, Math.PI * 2 / 3, Math.PI * 4 / 3].map((angle, i) => {
+        const px = Math.sin(angle) * 0.35;
+        const pz = Math.cos(angle) * 0.35;
+        return (
+          <group key={i}>
+            {/* Attachment ring on rim */}
+            <mesh position={[px * 0.95, 0.02, pz * 0.95]} rotation={[Math.PI / 2, angle, 0]}>
+              <torusGeometry args={[0.022, 0.008, 10, 18]} />
+              <meshPhysicalMaterial {...GOLD} clearcoat={0.9} />
+            </mesh>
+            {/* Chain rod */}
+            <mesh position={[px * 0.88, 0.5, pz * 0.88]}
+              rotation={[Math.atan2(0.5, 0.04), angle, 0]}>
+              <cylinderGeometry args={[0.007, 0.007, 1.0, 8]} />
+              <meshPhysicalMaterial {...GOLD} clearcoat={0.8} />
+            </mesh>
+            {/* Top connector knob */}
+            <mesh position={[px * 0.3, 0.92, pz * 0.3]}>
+              <sphereGeometry args={[0.022, 14, 14]} />
+              <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.02} />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {/* Central gathering ring where chains meet */}
+      <mesh position={[0, 0.98, 0]}>
+        <torusGeometry args={[0.052, 0.016, 14, 28]} />
+        <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.02} />
+      </mesh>
     </group>
   );
 }
@@ -541,53 +672,90 @@ function GavelMesh({ gavelRef, onStrike }) {
         onClick={onStrike} style={{ cursor: 'pointer' }}>
 
         {/* ── HANDLE ── */}
-        {/* Main shaft — tapered, lacquered dark wood */}
-        <mesh position={[0, -2.2, 0]} castShadow>
-          <cylinderGeometry args={[0.082, 0.21, 4.8, 48]} />
-          <meshPhysicalMaterial color="#3e1a06" roughness={0.35} metalness={0.0}
-            clearcoat={0.85} clearcoatRoughness={0.08} envMapIntensity={0.6} />
+        {/* Lower shaft — thick, lacquered rich rosewood */}
+        <mesh position={[0, -3.1, 0]} castShadow>
+          <cylinderGeometry args={[0.19, 0.215, 3.1, 52]} />
+          <meshPhysicalMaterial color="#2c0e04" roughness={0.28} metalness={0.02}
+            clearcoat={0.92} clearcoatRoughness={0.06}
+            envMapIntensity={0.8} emissive="#3a1206" emissiveIntensity={0.015} />
         </mesh>
-        {/* Handle end cap */}
-        <mesh position={[0, -4.63, 0]} castShadow>
-          <sphereGeometry args={[0.21, 36, 36]} />
-          <meshPhysicalMaterial color="#2e1204" roughness={0.38} metalness={0.0}
-            clearcoat={0.8} clearcoatRoughness={0.1} />
+        {/* Upper shaft — tapers toward ferrule */}
+        <mesh position={[0, -1.1, 0]} castShadow>
+          <cylinderGeometry args={[0.105, 0.19, 2.0, 52]} />
+          <meshPhysicalMaterial color="#351206" roughness={0.26} metalness={0.02}
+            clearcoat={0.95} clearcoatRoughness={0.05}
+            envMapIntensity={0.9} emissive="#3a1206" emissiveIntensity={0.01} />
         </mesh>
-        {/* Wood grain ring near base */}
-        <mesh position={[0, -4.1, 0]}>
-          <torusGeometry args={[0.185, 0.016, 16, 36]} />
-          <meshPhysicalMaterial color="#5a2a0e" roughness={0.3} metalness={0.0} clearcoat={0.7} />
-        </mesh>
-        {/* Leather grip wrapping */}
-        {[-1.6, -1.3, -1.0, -0.7, -0.4].map((y, i) => (
+        {/* Wood grain bands — subtle color breaks for grain illusion */}
+        {[-3.8, -3.2, -2.5, -1.8, -1.1].map((y, i) => (
           <mesh key={i} position={[0, y, 0]}>
-            <torusGeometry args={[0.148 - i * 0.006, 0.011, 14, 36]} />
-            <meshPhysicalMaterial color="#0e0604" roughness={0.88} metalness={0.0}
-              clearcoat={0.05} />
+            <torusGeometry args={[0.21 - Math.abs(y + 2.0) * 0.006, 0.006, 10, 44]} />
+            <meshPhysicalMaterial color={i % 2 === 0 ? '#4a1a08' : '#1e0802'}
+              roughness={0.32} metalness={0.0} clearcoat={0.6} />
+          </mesh>
+        ))}
+        {/* Handle end cap — sculpted rounded base */}
+        <mesh position={[0, -4.7, 0]} castShadow>
+          <sphereGeometry args={[0.215, 44, 44]} />
+          <meshPhysicalMaterial color="#200a02" roughness={0.32} metalness={0.0}
+            clearcoat={0.88} clearcoatRoughness={0.08} />
+        </mesh>
+        {/* Gold base cap ring */}
+        <mesh position={[0, -4.52, 0]}>
+          <torusGeometry args={[0.212, 0.018, 16, 44]} />
+          <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.03} />
+        </mesh>
+        {/* Leather grip wrapping — 8 tight bands */}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <mesh key={i} position={[0, -1.85 + i * 0.22, 0]}>
+            <torusGeometry args={[0.155 - i * 0.004, 0.014, 16, 44]} />
+            <meshPhysicalMaterial color="#0a0402" roughness={0.92} metalness={0.0}
+              clearcoat={0.04} sheenColor="#2a1008" sheen={0.2} />
+          </mesh>
+        ))}
+        {/* Leather between grip bands — slightly raised strips */}
+        {Array.from({ length: 7 }).map((_, i) => (
+          <mesh key={i} position={[0, -1.74 + i * 0.22, 0]}>
+            <cylinderGeometry args={[0.152 - i * 0.003, 0.152 - i * 0.003, 0.19, 36]} />
+            <meshPhysicalMaterial color="#160804" roughness={0.88} metalness={0.0}
+              clearcoat={0.06} />
           </mesh>
         ))}
 
         {/* ── COLLAR / FERRULE ── */}
         <mesh position={[0, 0.08, 0]}>
-          <cylinderGeometry args={[0.27, 0.28, 0.54, 44]} />
-          <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.04}
-            anisotropy={0.9} anisotropyRotation={Math.PI / 2} />
+          <cylinderGeometry args={[0.275, 0.285, 0.58, 48]} />
+          <meshPhysicalMaterial {...GOLD} clearcoat={1.0} clearcoatRoughness={0.03}
+            anisotropy={1.0} anisotropyRotation={Math.PI / 2}
+            emissive="#C9A84C" emissiveIntensity={0.06} />
         </mesh>
-        {/* Collar detail rings */}
-        {[-0.22, 0, 0.22].map((y, i) => (
+        {/* Collar engraving rings */}
+        {[-0.26, -0.09, 0.09, 0.26].map((y, i) => (
           <mesh key={i} position={[0, 0.08 + y, 0]}>
-            <torusGeometry args={[0.285, 0.009, 14, 44]} />
-            <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.8} />
+            <torusGeometry args={[0.287, i % 2 === 0 ? 0.011 : 0.007, 16, 48]} />
+            <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.9}
+              emissive="#b88020" emissiveIntensity={0.04} />
           </mesh>
         ))}
+        {/* Ferrule top transition disk */}
+        <mesh position={[0, 0.39, 0]}>
+          <cylinderGeometry args={[0.24, 0.275, 0.06, 40]} />
+          <meshPhysicalMaterial {...DARK_GOLD} clearcoat={0.8} />
+        </mesh>
 
         {/* ── HEAD ── */}
-        {/* Main barrel */}
+        {/* Main barrel — high-lacquer dark rosewood, slight barrel crown */}
         <mesh position={[0, 0.72, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.62, 0.62, 3.14, 72]} />
-          <meshPhysicalMaterial color="#160806" roughness={0.22} metalness={0.15}
-            clearcoat={0.95} clearcoatRoughness={0.04}
-            envMapIntensity={2.0} />
+          <cylinderGeometry args={[0.63, 0.62, 3.18, 80]} />
+          <meshPhysicalMaterial color="#0e0402" roughness={0.18} metalness={0.18}
+            clearcoat={1.0} clearcoatRoughness={0.03}
+            envMapIntensity={2.8} emissive="#1a0804" emissiveIntensity={0.02} />
+        </mesh>
+        {/* Barrel crown (very slight bulge at center) */}
+        <mesh position={[0, 0.72, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.638, 0.638, 1.4, 80]} />
+          <meshPhysicalMaterial color="#100502" roughness={0.16} metalness={0.2}
+            clearcoat={1.0} clearcoatRoughness={0.02} envMapIntensity={3.0} />
         </mesh>
         {/* Left bevel taper 1 */}
         <mesh position={[-1.57, 0.72, 0]} rotation={[0, 0, Math.PI / 2]}>
@@ -780,7 +948,7 @@ function GavelScene({ onStrikeComplete }) {
       {/* Left fill to balance */}
       <pointLight position={[-7, 3, 3]} intensity={0.7} color="#e8d4c0" distance={20} decay={2} />
 
-      <Environment preset="apartment" />
+      <Environment preset="warehouse" />
 
       <BackWall />
       <MarbleFloor />
@@ -800,8 +968,8 @@ function GavelScene({ onStrikeComplete }) {
         <meshBasicMaterial color="#C9A84C" transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
-      <Sparkles count={200} scale={22} size={1.2} speed={0.18} color="#C9A84C" opacity={0.38} />
-      <ContactShadows position={[0, -5.14, 0]} opacity={0.7} scale={34} blur={4.0} far={8} color="#1e0e06" />
+      <Sparkles count={240} scale={22} size={1.4} speed={0.14} color="#C9A84C" opacity={0.32} />
+      <ContactShadows position={[0, -5.14, 0]} opacity={0.85} scale={36} blur={3.5} far={10} color="#1a0a04" />
     </group>
   );
 }
@@ -862,7 +1030,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="hero" className="relative h-screen w-full overflow-hidden bg-background">
+    <section id="hero" className="relative h-screen w-full overflow-hidden bg-transparent">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background z-[1] pointer-events-none" />
 
       <motion.div className="absolute inset-0 z-0"

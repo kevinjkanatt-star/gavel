@@ -24,7 +24,7 @@ export default function Testimonials() {
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
   return (
-    <section id="testimonials" className="py-32 px-6 md:px-12 bg-white relative">
+    <section id="testimonials" className="py-32 px-6 md:px-12 bg-transparent relative">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
       <div className="max-w-7xl mx-auto" ref={containerRef}>

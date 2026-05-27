@@ -36,7 +36,7 @@ export default function AILegalAssistant() {
   };
 
   return (
-    <section id="features" className="py-32 px-6 md:px-12 bg-white relative">
+    <section id="features" className="py-32 px-6 md:px-12 bg-transparent relative">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
       <div className="max-w-7xl mx-auto relative z-10">

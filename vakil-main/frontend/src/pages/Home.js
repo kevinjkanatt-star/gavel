@@ -11,7 +11,7 @@ import FinalCTA from '../components/home/FinalCTA';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden" data-testid="home-page">
+    <div className="min-h-screen bg-transparent text-foreground overflow-x-hidden" data-testid="home-page">
       <Navbar />
       <HeroSection />
       <AILegalAssistant />

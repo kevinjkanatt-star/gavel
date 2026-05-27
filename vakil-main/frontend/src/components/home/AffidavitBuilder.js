@@ -6,7 +6,7 @@ export default function AffidavitBuilder() {
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
 
   return (
-    <section className="py-32 px-6 md:px-12 bg-white relative overflow-hidden">
+    <section className="py-32 px-6 md:px-12 bg-transparent relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse 70% 60% at 30% 50%, rgba(124,29,43,0.03) 0%, transparent 70%)' }} />
 
