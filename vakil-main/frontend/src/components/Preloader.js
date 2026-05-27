@@ -7,9 +7,8 @@ const Preloader = ({ onComplete }) => {
 
   useEffect(() => {
     const start = Date.now();
-    const duration = 2400;
+    const duration = 2600;
     let raf;
-
     const tick = () => {
       const elapsed = Date.now() - start;
       const p = Math.min(elapsed / duration, 1);
@@ -20,22 +19,13 @@ const Preloader = ({ onComplete }) => {
       } else {
         setTimeout(() => {
           setVisible(false);
-          setTimeout(onComplete, 600);
-        }, 220);
+          setTimeout(onComplete, 650);
+        }, 250);
       }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [onComplete]);
-
-  const ribbonVariants = {
-    hidden: { pathLength: 0, opacity: 0 },
-    visible: {
-      pathLength: 1,
-      opacity: 1,
-      transition: { duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
-    },
-  };
 
   return (
     <AnimatePresence>
@@ -43,152 +33,218 @@ const Preloader = ({ onComplete }) => {
         <motion.div
           key="preloader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.02 }}
-          transition={{ duration: 0.55, ease: 'easeInOut' }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+          exit={{ opacity: 0, scale: 1.015 }}
+          transition={{ duration: 0.65, ease: 'easeInOut' }}
+          className="fixed inset-0 z-[9999] flex overflow-hidden"
           style={{ background: '#ffffff' }}
         >
-          {/* Gold circle pattern overlay — subtle */}
+          {/* Subtle gold pattern backdrop */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              backgroundImage: `url(${process.env.PUBLIC_URL}/gold-pattern.png)`,
+              backgroundImage: `url(/gold-pattern.png)`,
               backgroundRepeat: 'repeat',
-              backgroundSize: '72px 72px',
-              opacity: 0.18,
+              backgroundSize: '68px 68px',
+              opacity: 0.22,
             }}
           />
 
-          {/* LEFT — Gold ribbon / fold animation */}
-          <motion.div
-            className="absolute left-0 bottom-0 pointer-events-none"
-            style={{ width: '42%', maxWidth: 520 }}
-            initial={{ x: -120, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          >
-            {/* Animated gold ribbon image — unfolds from lower-left */}
-            <motion.img
-              src={`${process.env.PUBLIC_URL}/gold-ribbon.png`}
-              alt=""
-              className="w-full h-auto select-none"
-              style={{ transformOrigin: 'bottom left' }}
-              initial={{ scaleX: 0.0, scaleY: 0.3, opacity: 0, rotate: -18 }}
-              animate={{ scaleX: 1, scaleY: 1, opacity: 1, rotate: 0 }}
-              transition={{
-                duration: 1.5,
-                ease: [0.16, 1, 0.3, 1],
-                delay: 0.15,
-                opacity: { duration: 0.6, delay: 0.15 },
-              }}
-            />
+          {/* ───────────────────────────────────────
+              LEFT PANEL — Full-height gold ribbon
+          ─────────────────────────────────────── */}
+          <div className="relative flex-shrink-0 h-full overflow-hidden" style={{ width: '43%' }}>
 
-            {/* Shimmer sweep across ribbon */}
-            <motion.div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)',
-                backgroundSize: '200% 100%',
-              }}
-              initial={{ backgroundPosition: '-100% 0' }}
-              animate={{ backgroundPosition: '200% 0' }}
-              transition={{ duration: 1.4, ease: 'linear', delay: 1.0, repeat: Infinity, repeatDelay: 2 }}
-            />
-          </motion.div>
+            {/* Layer 0 — white base so edges are clean */}
+            <div className="absolute inset-0 bg-white" />
 
-          {/* CENTER — Logo + name + loading */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
-            className="relative z-10 flex flex-col items-center gap-6"
-          >
-            {/* Logo */}
+            {/* Layer 1 — main ribbon, slides in from the left */}
             <motion.div
-              animate={{ scale: [1, 1.04, 1], rotate: [0, -4, 4, -2, 0] }}
-              transition={{ duration: 2.0, delay: 0.5, ease: 'easeInOut' }}
-              className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center"
-              style={{
-                boxShadow: '0 8px 40px rgba(201,168,76,0.35), 0 2px 12px rgba(109,7,26,0.18)',
-                border: '2px solid rgba(201,168,76,0.3)',
-              }}
+              className="absolute inset-0"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0 }}
             >
               <img
-                src="/logo.png"
-                alt="VakilSetu"
-                className="w-full h-full object-contain"
-                style={{ background: 'transparent' }}
+                src="/gold-ribbon.png"
+                alt=""
+                draggable={false}
+                className="w-full h-full select-none"
+                style={{ objectFit: 'cover', objectPosition: 'left center' }}
               />
             </motion.div>
 
-            {/* Name */}
-            <div className="text-center">
-              <motion.h1
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.65 }}
-                className="font-serif text-4xl font-bold mb-1"
-                style={{ color: '#6D071A', letterSpacing: '-0.02em' }}
+            {/* Layer 2 — second ribbon layer, folds open with slight scale */}
+            <motion.div
+              className="absolute inset-0"
+              initial={{ x: '-100%', scaleX: 0.6 }}
+              animate={{ x: 0, scaleX: 1 }}
+              transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.14 }}
+              style={{ transformOrigin: 'left center' }}
+            >
+              <img
+                src="/gold-ribbon.png"
+                alt=""
+                draggable={false}
+                className="w-full h-full select-none"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'left center',
+                  opacity: 0.55,
+                  mixBlendMode: 'multiply',
+                  filter: 'brightness(1.08) saturate(1.1)',
+                }}
+              />
+            </motion.div>
+
+            {/* Layer 3 — third layer, rotates open like a page fold */}
+            <motion.div
+              className="absolute inset-0"
+              initial={{ x: '-100%', rotate: -8, scaleX: 0.4 }}
+              animate={{ x: 0, rotate: 0, scaleX: 1 }}
+              transition={{ duration: 1.55, ease: [0.16, 1, 0.3, 1], delay: 0.28 }}
+              style={{ transformOrigin: 'left bottom' }}
+            >
+              <img
+                src="/gold-ribbon.png"
+                alt=""
+                draggable={false}
+                className="w-full h-full select-none"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'left center',
+                  opacity: 0.35,
+                  mixBlendMode: 'overlay',
+                }}
+              />
+            </motion.div>
+
+            {/* Shimmer sweep across the ribbon */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(105deg, transparent 15%, rgba(255,255,255,0.65) 48%, transparent 82%)',
+              }}
+              initial={{ x: '-110%' }}
+              animate={{ x: '110%' }}
+              transition={{ duration: 0.85, ease: 'easeInOut', delay: 1.0 }}
+            />
+
+            {/* Right-edge feather so ribbon blends into white */}
+            <div
+              className="absolute inset-y-0 right-0 pointer-events-none"
+              style={{
+                width: '22%',
+                background: 'linear-gradient(to right, transparent, #ffffff)',
+              }}
+            />
+          </div>
+
+          {/* ───────────────────────────────────────
+              RIGHT PANEL — Logo + name + progress
+          ─────────────────────────────────────── */}
+          <div className="relative flex-1 flex flex-col items-center justify-center z-10 px-6">
+
+            <motion.div
+              initial={{ scale: 0.82, opacity: 0, y: 22 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+              className="flex flex-col items-center gap-5"
+            >
+              {/* Logo */}
+              <motion.div
+                animate={{ scale: [1, 1.04, 1], rotate: [0, -4, 4, -2, 0] }}
+                transition={{ duration: 2.2, delay: 0.7, ease: 'easeInOut' }}
+                className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center"
+                style={{
+                  boxShadow: '0 8px 40px rgba(201,168,76,0.38), 0 2px 14px rgba(109,7,26,0.16)',
+                  border: '2.5px solid rgba(201,168,76,0.32)',
+                  background: 'white',
+                }}
               >
-                VakilSetu
-              </motion.h1>
-              <motion.p
+                <img
+                  src="/logo.png"
+                  alt="VakilSetu"
+                  className="w-full h-full object-contain"
+                />
+              </motion.div>
+
+              {/* Name */}
+              <div className="text-center">
+                <motion.h1
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55, duration: 0.7 }}
+                  className="font-serif font-bold mb-1.5"
+                  style={{ color: '#6D071A', fontSize: '2.25rem', letterSpacing: '-0.02em' }}
+                >
+                  VakilSetu
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.72, duration: 0.65 }}
+                  className="text-xs font-light tracking-[0.22em] uppercase"
+                  style={{ color: '#C9A84C' }}
+                >
+                  Legal Intelligence Platform
+                </motion.p>
+              </div>
+
+              {/* Divider */}
+              <motion.div
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 1 }}
+                transition={{ delay: 0.78, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  width: 260,
+                  height: 2,
+                  background: 'linear-gradient(90deg, transparent, #C9A84C 30%, #e8c96a 60%, transparent)',
+                  borderRadius: 999,
+                }}
+              />
+
+              {/* Progress */}
+              <div style={{ width: 260 }}>
+                <div
+                  className="w-full rounded-full overflow-hidden"
+                  style={{ height: 3, background: 'rgba(109,7,26,0.09)' }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-[80ms]"
+                    style={{
+                      width: `${progress}%`,
+                      background: 'linear-gradient(90deg, #C9A84C, #e8c96a)',
+                      boxShadow: '0 0 10px rgba(201,168,76,0.55)',
+                    }}
+                  />
+                </div>
+                <p
+                  className="text-center mt-2 text-xs"
+                  style={{ color: 'rgba(109,7,26,0.38)', fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {progress}%
+                </p>
+              </div>
+
+              {/* Pulsing dots */}
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.65, duration: 0.6 }}
-                className="text-sm font-light tracking-widest uppercase"
-                style={{ color: '#C9A84C' }}
+                transition={{ delay: 0.95 }}
+                className="flex gap-2.5"
               >
-                Legal Intelligence Platform
-              </motion.p>
-            </div>
-
-            {/* Progress bar */}
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ delay: 0.6, duration: 0.45 }}
-              className="w-72 mt-1"
-            >
-              <div
-                className="w-full h-1 rounded-full overflow-hidden"
-                style={{ background: 'rgba(109,7,26,0.10)' }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-100"
-                  style={{
-                    width: `${progress}%`,
-                    background: 'linear-gradient(90deg, #C9A84C, #e8c96a)',
-                    boxShadow: '0 0 10px rgba(201,168,76,0.5)',
-                  }}
-                />
-              </div>
-              <p
-                className="text-center mt-2 text-xs"
-                style={{ color: 'rgba(109,7,26,0.45)', fontVariantNumeric: 'tabular-nums' }}
-              >
-                {progress}%
-              </p>
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="rounded-full"
+                    style={{ width: 6, height: 6, background: '#C9A84C' }}
+                    animate={{ scale: [1, 1.7, 1], opacity: [0.35, 1, 0.35] }}
+                    transition={{ duration: 1.15, repeat: Infinity, delay: i * 0.24, ease: 'easeInOut' }}
+                  />
+                ))}
+              </motion.div>
             </motion.div>
-
-            {/* Pulsing dots */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex gap-2"
-            >
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: '#C9A84C' }}
-                  animate={{ scale: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.22, ease: 'easeInOut' }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

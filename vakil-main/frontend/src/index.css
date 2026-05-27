@@ -260,5 +260,5 @@ select:focus {
 }
 
 .min-h-screen {
-    background-color: #FFFFFF;
+    background-color: transparent;
 }

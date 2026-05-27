@@ -111,22 +111,25 @@ function App() {
     return () => lenis.destroy();
   }, []);
 
-  useEffect(() => {
-    const url = `${process.env.PUBLIC_URL}/gold-pattern.png`;
-    document.body.style.backgroundImage = `url(${url})`;
-    document.body.style.backgroundRepeat = 'repeat';
-    document.body.style.backgroundSize = '72px 72px';
-    document.body.style.backgroundColor = '#ffffff';
-    return () => {
-      document.body.style.backgroundImage = '';
-      document.body.style.backgroundRepeat = '';
-      document.body.style.backgroundSize = '';
-      document.body.style.backgroundColor = '';
-    };
-  }, []);
 
   return (
     <BrowserRouter>
+      {/* Gold circle pattern overlay — uses multiply blend mode so it's visible on ANY white page */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9998,
+          backgroundImage: `url(${process.env.PUBLIC_URL}/gold-pattern.png)`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '68px 68px',
+          mixBlendMode: 'multiply',
+          opacity: 0.52,
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      />
       <LanguageProvider>
         <AuthProvider>
           {!preloaderDone && <Preloader onComplete={() => setPreloaderDone(true)} />}

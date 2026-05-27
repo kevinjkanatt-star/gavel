@@ -1,5 +1,5 @@
-import { useRef, useState, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useState, useMemo, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Sparkles, Environment, ContactShadows, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
@@ -32,6 +32,43 @@ const BRIGHT_GOLD = {
 const MARBLE = { color: '#ede8e0', roughness: 0.04, metalness: 0.0, clearcoat: 0.9, clearcoatRoughness: 0.05, envMapIntensity: 0.8 };
 const DARK_WOOD = { color: '#140601', roughness: 0.22, metalness: 0.04, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.2, emissive: '#2a0e02', emissiveIntensity: 0.01 };
 const MED_WOOD = { color: '#3a1404', roughness: 0.35, metalness: 0.02, clearcoat: 0.85, clearcoatRoughness: 0.06 };
+
+/* ─────────────────────────────────────────────
+   CINEMATIC CAMERA — flies in from far on mount
+───────────────────────────────────────────── */
+function CinematicCamera({ isMobile }) {
+  const { camera } = useThree();
+  const tRef = useRef(0);
+  const done = useRef(false);
+  useFrame((_, delta) => {
+    if (done.current) return;
+    tRef.current = Math.min(tRef.current + delta * 0.26, 1); // ~3.8 s total
+    const ease = 1 - Math.pow(1 - tRef.current, 3);          // cubic ease-out
+    const startZ = isMobile ? 24 : 21;
+    const finalZ = isMobile ? 16 : 13;
+    camera.position.z = startZ - (startZ - finalZ) * ease;
+    camera.position.y = 5.5 - (5.5 - 1.5) * ease;
+    camera.lookAt(0, 0, 0);
+    if (tRef.current >= 1) done.current = true;
+  });
+  return null;
+}
+
+/* ─────────────────────────────────────────────
+   RISE GROUP — objects rise from below on cue
+───────────────────────────────────────────── */
+function RiseGroup({ show, riseDistance = 4, children }) {
+  const groupRef = useRef(null);
+  const yRef = useRef(-riseDistance);
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const target = show ? 0 : -riseDistance;
+    yRef.current += (target - yRef.current) * Math.min(1, delta * 2.2);
+    groupRef.current.position.y = yRef.current;
+    groupRef.current.visible = yRef.current > -riseDistance + 0.08;
+  });
+  return <group ref={groupRef} visible={false}>{children}</group>;
+}
 
 /* ─────────────────────────────────────────────
    MARBLE FLOOR
@@ -891,24 +928,34 @@ function DocumentScroll() {
 /* ─────────────────────────────────────────────
    FULL SCENE
 ───────────────────────────────────────────── */
-function GavelScene({ onStrikeComplete }) {
+function GavelScene({ onStrikeComplete, isMobile }) {
   const gavelRef = useRef(null);
   const rippleRef = useRef(null);
   const sceneRef = useRef(null);
   const [isStriking, setIsStriking] = useState(false);
+  const [revealPhase, setRevealPhase] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setRevealPhase(1), 180),   // pillars
+      setTimeout(() => setRevealPhase(2), 580),   // bench + block
+      setTimeout(() => setRevealPhase(3), 1020),  // scales
+      setTimeout(() => setRevealPhase(4), 1460),  // books, scroll, candles
+      setTimeout(() => setRevealPhase(5), 2050),  // gavel — hero entrance
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   useFrame(({ mouse, clock }) => {
     if (sceneRef.current) {
-      /* Ultra-smooth parallax — lower lerp = more inertia */
+      const lerpSpeed = isMobile ? 0.03 : 0.022;
       sceneRef.current.rotation.y = THREE.MathUtils.lerp(
-        sceneRef.current.rotation.y, (mouse.x * Math.PI) / 22, 0.022);
+        sceneRef.current.rotation.y, (mouse.x * Math.PI) / 22, lerpSpeed);
       sceneRef.current.rotation.x = THREE.MathUtils.lerp(
-        sceneRef.current.rotation.x, (-mouse.y * Math.PI) / 42, 0.022);
+        sceneRef.current.rotation.x, (-mouse.y * Math.PI) / 42, lerpSpeed);
     }
     if (gavelRef.current && !isStriking) {
-      /* Slow, stately idle rotation */
       gavelRef.current.rotation.y += 0.001;
-      /* Subtle breathe — tiny up/down sine */
       gavelRef.current.position.y = -0.5 + Math.sin(clock.getElapsedTime() * 0.5) * 0.025;
     }
   });
@@ -920,18 +967,14 @@ function GavelScene({ onStrikeComplete }) {
     const ripple = rippleRef.current;
 
     const tl = gsap.timeline({ onComplete: () => { setIsStriking(false); onStrikeComplete(); } });
-    /* Wind-up — smooth power3 in */
     tl.to(gavel.rotation, { z: -1.25, x: -0.12, duration: 0.18, ease: 'power3.in' });
-    /* Strike down — fast power4 */
     tl.to(gavel.rotation, { z: 0.18, x: 0.75, duration: 0.19, ease: 'power4.in' });
     tl.to(gavel.position, { y: -1.18, duration: 0.19, ease: 'power4.in' }, '<');
-    /* Impact effects */
     tl.add(() => {
       ripple.scale.set(0.04, 0.04, 0.04);
       ripple.material.opacity = 0.95;
       gsap.to(ripple.scale, { x: 14, y: 14, z: 14, duration: 1.8, ease: 'power2.out' });
       gsap.to(ripple.material, { opacity: 0, duration: 1.8, ease: 'power2.out' });
-      /* Camera shake */
       [
         [55, 'translate(4px,4px)'],
         [110, 'translate(-4px,-3px)'],
@@ -940,7 +983,6 @@ function GavelScene({ onStrikeComplete }) {
         [275, 'translate(0,0)'],
       ].forEach(([t, v]) => setTimeout(() => { document.body.style.transform = v; }, t));
     }, '-=0.02');
-    /* Elastic bounce-back — tuned for smooth settle */
     tl.to(gavel.rotation, { z: -0.72, x: 0.15, duration: 1.5, ease: 'elastic.out(1,0.3)' }, '+=0.05');
     tl.to(gavel.position, { y: -0.5, duration: 1.2, ease: 'elastic.out(1,0.38)' }, '<');
   };
@@ -949,48 +991,57 @@ function GavelScene({ onStrikeComplete }) {
 
   return (
     <group ref={sceneRef}>
-      {/* ── Lighting ── */}
-      <ambientLight intensity={0.28} color="#fff4e8" />
-      {/* Primary key light — warm overhead */}
-      <directionalLight position={[6, 20, 10]} intensity={4.2} color="#fff8f2" castShadow
-        shadow-mapSize={[4096, 4096]}
+      <CinematicCamera isMobile={isMobile} />
+
+      {/* ── Lighting: full quality desktop, simplified mobile ── */}
+      <ambientLight intensity={isMobile ? 0.5 : 0.28} color="#fff4e8" />
+      <directionalLight position={[6, 20, 10]} intensity={isMobile ? 3.0 : 4.2} color="#fff8f2"
+        castShadow={!isMobile}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-near={0.5} shadow-camera-far={60}
         shadow-camera-left={-18} shadow-camera-right={18}
         shadow-camera-top={18} shadow-camera-bottom={-18}
         shadow-bias={-0.0002} shadow-normalBias={0.018} />
-      {/* Secondary fill — cool from right */}
-      <directionalLight position={[-8, 14, 6]} intensity={1.8} color="#e8f0ff" />
-      {/* Burgundy dramatic fill from left */}
-      <spotLight position={[-16, 14, 8]} intensity={6.5} color="#7C1D2B"
-        angle={0.32} penumbra={0.9} castShadow />
-      {/* Gold hero rim — right rear behind gavel */}
-      <pointLight position={[2.2, 3.0, 5.5]} intensity={4.5} color="#D4A83A" distance={22} decay={2} />
-      {/* Strong gold floor bounce */}
-      <pointLight position={[0.3, -3.5, 2.8]} intensity={2.0} color="#C9A84C" distance={16} decay={2} />
-      {/* Warm back fill */}
-      <pointLight position={[-4, -0.5, 5]} intensity={1.6} color="#8B4020" distance={24} decay={2} />
-      {/* Cool pillar overhead */}
-      <pointLight position={[0, 12, -2]} intensity={2.0} color="#d8dcf0" distance={38} decay={1.5} />
-      {/* Right fill balance */}
-      <pointLight position={[9, 4, 4]} intensity={1.0} color="#f0e8d8" distance={22} decay={2} />
-      {/* Gold candle warmth on scales */}
-      <pointLight position={[-3.2, -3.0, 2.0]} intensity={1.4} color="#ffb84a" distance={10} decay={2.5} />
-      {/* Books fill */}
-      <pointLight position={[3.4, -3.5, 2.0]} intensity={1.2} color="#ffd080" distance={10} decay={2.5} />
+      <directionalLight position={[-8, 14, 6]} intensity={isMobile ? 1.0 : 1.8} color="#e8f0ff" />
+      {!isMobile && <>
+        <spotLight position={[-16, 14, 8]} intensity={6.5} color="#7C1D2B" angle={0.32} penumbra={0.9} castShadow />
+        <pointLight position={[0.3, -3.5, 2.8]} intensity={2.0} color="#C9A84C" distance={16} decay={2} />
+        <pointLight position={[-4, -0.5, 5]} intensity={1.6} color="#8B4020" distance={24} decay={2} />
+        <pointLight position={[0, 12, -2]} intensity={2.0} color="#d8dcf0" distance={38} decay={1.5} />
+        <pointLight position={[9, 4, 4]} intensity={1.0} color="#f0e8d8" distance={22} decay={2} />
+        <pointLight position={[3.4, -3.5, 2.0]} intensity={1.2} color="#ffd080" distance={10} decay={2.5} />
+      </>}
+      <pointLight position={[2.2, 3.0, 5.5]} intensity={isMobile ? 3.0 : 4.5} color="#D4A83A" distance={22} decay={2} />
+      <pointLight position={[-3.2, -3.0, 2.0]} intensity={isMobile ? 1.0 : 1.4} color="#ffb84a" distance={10} decay={2.5} />
 
       <Environment preset="studio" background={false} />
-
       <BackWall />
       <MarbleFloor />
-      <Pillars />
-      <JudgeBench />
-      <SoundBlock />
-      <ScalesOfJustice />
-      <LawBooks />
-      <DocumentScroll />
-      <Candles />
 
-      <GavelMesh gavelRef={gavelRef} onStrike={handleStrike} />
+      {/* ── Cinematic staggered reveal — each group rises from below ── */}
+      <RiseGroup show={revealPhase >= 1} riseDistance={6}>
+        <Pillars />
+      </RiseGroup>
+
+      <RiseGroup show={revealPhase >= 2} riseDistance={4}>
+        <JudgeBench />
+        <SoundBlock />
+      </RiseGroup>
+
+      <RiseGroup show={revealPhase >= 3} riseDistance={5}>
+        <ScalesOfJustice />
+      </RiseGroup>
+
+      <RiseGroup show={revealPhase >= 4} riseDistance={3.5}>
+        <LawBooks />
+        <DocumentScroll />
+        <Candles />
+      </RiseGroup>
+
+      {/* Gavel rises last — the hero of the scene */}
+      <RiseGroup show={revealPhase >= 5} riseDistance={7}>
+        <GavelMesh gavelRef={gavelRef} onStrike={handleStrike} />
+      </RiseGroup>
 
       {/* Strike ripple */}
       <mesh ref={rippleRef} position={[0.3, -4.52, 0.28]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -998,9 +1049,14 @@ function GavelScene({ onStrikeComplete }) {
         <meshBasicMaterial color="#C9A84C" transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
-      <Sparkles count={320} scale={24} size={1.6} speed={0.12} color="#D4A83A" opacity={0.28} />
-      <Sparkles count={80} scale={12} size={0.8} speed={0.06} color="#ffffff" opacity={0.15} />
-      <ContactShadows position={[0, -5.14, 0]} opacity={0.92} scale={40} blur={2.8} far={12} color="#150804" />
+      <Sparkles
+        count={isMobile ? 55 : 320} scale={isMobile ? 16 : 24}
+        size={isMobile ? 1.0 : 1.6} speed={isMobile ? 0.06 : 0.12}
+        color="#D4A83A" opacity={0.28} />
+      {!isMobile && <>
+        <Sparkles count={80} scale={12} size={0.8} speed={0.06} color="#ffffff" opacity={0.15} />
+        <ContactShadows position={[0, -5.14, 0]} opacity={0.92} scale={40} blur={2.8} far={12} color="#150804" />
+      </>}
     </group>
   );
 }
@@ -1016,6 +1072,7 @@ function StaticHeroBackground() {
 
 export default function HeroSection() {
   const [isStruck, setIsStruck] = useState(false);
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, []);
 
   const slowScrollToFeatures = () => {
     const target = document.getElementById('features');
@@ -1070,18 +1127,19 @@ export default function HeroSection() {
           : { opacity: 1, filter: 'blur(0px)' }}>
         {checkWebGL() ? (
           <Canvas
-            camera={{ position: [0, 1.5, 13], fov: 42 }}
-            shadows="soft"
-            dpr={[1, 2]}
+            camera={{ position: [0, 5.5, isMobile ? 24 : 21], fov: isMobile ? 50 : 42 }}
+            shadows={isMobile ? false : 'soft'}
+            dpr={isMobile ? [0.65, 1] : [1, 2]}
+            performance={{ min: 0.5 }}
             gl={{
-              antialias: true,
+              antialias: !isMobile,
               alpha: true,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.22,
+              toneMappingExposure: isMobile ? 1.1 : 1.22,
               powerPreference: 'high-performance',
               shadowMapType: THREE.PCFShadowMap,
             }}>
-            <GavelScene onStrikeComplete={handleStrikeComplete} />
+            <GavelScene onStrikeComplete={handleStrikeComplete} isMobile={isMobile} />
           </Canvas>
         ) : (
           <StaticHeroBackground />
