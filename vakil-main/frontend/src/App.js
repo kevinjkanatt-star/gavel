@@ -115,7 +115,7 @@ function App() {
     <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
-          {/* Global tiled pattern overlay — fixed behind all content */}
+          {/* Global tiled pattern overlay — multiply blend makes white transparent, gold lines show through */}
           <div
             aria-hidden="true"
             style={{
@@ -124,9 +124,10 @@ function App() {
               backgroundImage: `url(${process.env.PUBLIC_URL}/pattern.png)`,
               backgroundRepeat: 'repeat',
               backgroundSize: '130px 130px',
-              opacity: 0.065,
+              opacity: 0.28,
+              mixBlendMode: 'multiply',
               pointerEvents: 'none',
-              zIndex: 0,
+              zIndex: 9999,
             }}
           />
           {!preloaderDone && <Preloader onComplete={() => setPreloaderDone(true)} />}
