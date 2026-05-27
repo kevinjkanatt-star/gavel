@@ -12,30 +12,54 @@ function checkWebGL() {
   } catch { return false; }
 }
 
-/* ── shared PBR helpers ── */
-const GOLD = { color: '#C9A84C', roughness: 0.06, metalness: 1.0, envMapIntensity: 3.5, emissive: '#C9A84C', emissiveIntensity: 0.04 };
-const DARK_GOLD = { color: '#a87830', roughness: 0.1, metalness: 0.98, envMapIntensity: 2.8, emissive: '#b8922e', emissiveIntensity: 0.02 };
-const MARBLE = { color: '#ede8e0', roughness: 0.06, metalness: 0.0 };
-const DARK_WOOD = { color: '#1c0a03', roughness: 0.28, metalness: 0.0 };
-const MED_WOOD = { color: '#4a1e06', roughness: 0.42, metalness: 0.0 };
+/* ── shared PBR helpers — premium quality ── */
+const GOLD = {
+  color: '#D4A83A', roughness: 0.035, metalness: 1.0,
+  envMapIntensity: 5.0, emissive: '#C9A020', emissiveIntensity: 0.06,
+  clearcoat: 1.0, clearcoatRoughness: 0.02,
+  anisotropy: 1.0, anisotropyRotation: Math.PI / 2,
+};
+const DARK_GOLD = {
+  color: '#9A6E1A', roughness: 0.08, metalness: 0.99,
+  envMapIntensity: 3.8, emissive: '#9A6010', emissiveIntensity: 0.03,
+  clearcoat: 0.9, clearcoatRoughness: 0.04,
+};
+const BRIGHT_GOLD = {
+  color: '#F0C84A', roughness: 0.02, metalness: 1.0,
+  envMapIntensity: 6.0, emissive: '#E0A820', emissiveIntensity: 0.1,
+  clearcoat: 1.0, clearcoatRoughness: 0.01,
+};
+const MARBLE = { color: '#ede8e0', roughness: 0.04, metalness: 0.0, clearcoat: 0.9, clearcoatRoughness: 0.05, envMapIntensity: 0.8 };
+const DARK_WOOD = { color: '#140601', roughness: 0.22, metalness: 0.04, clearcoat: 1.0, clearcoatRoughness: 0.04, envMapIntensity: 1.2, emissive: '#2a0e02', emissiveIntensity: 0.01 };
+const MED_WOOD = { color: '#3a1404', roughness: 0.35, metalness: 0.02, clearcoat: 0.85, clearcoatRoughness: 0.06 };
 
 /* ─────────────────────────────────────────────
    MARBLE FLOOR
 ───────────────────────────────────────────── */
 function MarbleFloor() {
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.15, 0]} receiveShadow>
-      <planeGeometry args={[50, 28]} />
-      <meshPhysicalMaterial
-        color="#ddd8d0"
-        roughness={0.04}
-        metalness={0.0}
-        clearcoat={1.0}
-        clearcoatRoughness={0.06}
-        reflectivity={0.9}
-        envMapIntensity={1.2}
-      />
-    </mesh>
+    <>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.15, 0]} receiveShadow>
+        <planeGeometry args={[50, 28]} />
+        <meshPhysicalMaterial
+          color="#e8e2d8"
+          roughness={0.02}
+          metalness={0.0}
+          clearcoat={1.0}
+          clearcoatRoughness={0.03}
+          reflectivity={1.0}
+          envMapIntensity={2.2}
+          ior={1.52}
+        />
+      </mesh>
+      {/* Marble vein accent lines */}
+      {[-8, -4, 0, 4, 8].map((x, i) => (
+        <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[x, -5.14, 0]}>
+          <planeGeometry args={[0.015, 28]} />
+          <meshPhysicalMaterial color="#c8c0b0" roughness={0.08} metalness={0.0} clearcoat={0.5} transparent opacity={0.5} />
+        </mesh>
+      ))}
+    </>
   );
 }
 
@@ -509,8 +533,8 @@ function ScalesOfJustice() {
       ))}
       {/* Column */}
       <mesh position={[0, 1.1, 0]} castShadow>
-        <cylinderGeometry args={[0.035, 0.044, 2.18, 22]} />
-        <meshPhysicalMaterial {...GOLD} clearcoat={0.9} clearcoatRoughness={0.06} />
+        <cylinderGeometry args={[0.035, 0.044, 2.18, 32]} />
+        <meshPhysicalMaterial {...BRIGHT_GOLD} />
       </mesh>
       {/* Decorative rings on column */}
       {[0.32, 0.78, 1.42, 1.88].map((y, i) => (
@@ -521,10 +545,8 @@ function ScalesOfJustice() {
       ))}
       {/* Top finial sphere */}
       <mesh position={[0, 2.28, 0]}>
-        <sphereGeometry args={[0.075, 32, 32]} />
-        <meshPhysicalMaterial color="#e8d050" roughness={0.04} metalness={1.0}
-          envMapIntensity={4.0} emissive="#d4a020" emissiveIntensity={0.08}
-          clearcoat={1.0} clearcoatRoughness={0.02} />
+        <sphereGeometry args={[0.075, 48, 48]} />
+        <meshPhysicalMaterial {...BRIGHT_GOLD} emissiveIntensity={0.12} />
       </mesh>
       {/* Flame */}
       <mesh position={[0, 2.46, 0]}>
@@ -533,16 +555,14 @@ function ScalesOfJustice() {
       </mesh>
       {/* Cross-beam — very slight tilt */}
       <mesh position={[0, 2.12, 0]} rotation={[0, 0, 0.055]}>
-        <cylinderGeometry args={[0.016, 0.016, 2.28, 18]} />
-        <meshPhysicalMaterial {...GOLD} clearcoat={0.9} clearcoatRoughness={0.05}
-          anisotropy={0.8} anisotropyRotation={Math.PI / 2} />
+        <cylinderGeometry args={[0.016, 0.016, 2.28, 24]} />
+        <meshPhysicalMaterial {...BRIGHT_GOLD} />
       </mesh>
       {/* Arm end knobs */}
       {[-1.05, 1.05].map((x, i) => (
         <mesh key={i} position={[x, 2.12, 0]}>
-          <sphereGeometry args={[0.036, 22, 22]} />
-          <meshPhysicalMaterial color="#e8d050" roughness={0.04} metalness={1.0}
-            envMapIntensity={4.5} clearcoat={1.0} clearcoatRoughness={0.02} />
+          <sphereGeometry args={[0.036, 32, 32]} />
+          <meshPhysicalMaterial {...BRIGHT_GOLD} />
         </mesh>
       ))}
       {/* Chains */}
@@ -674,17 +694,19 @@ function GavelMesh({ gavelRef, onStrike }) {
         {/* ── HANDLE ── */}
         {/* Lower shaft — thick, lacquered rich rosewood */}
         <mesh position={[0, -3.1, 0]} castShadow>
-          <cylinderGeometry args={[0.19, 0.215, 3.1, 52]} />
-          <meshPhysicalMaterial color="#2c0e04" roughness={0.28} metalness={0.02}
-            clearcoat={0.92} clearcoatRoughness={0.06}
-            envMapIntensity={0.8} emissive="#3a1206" emissiveIntensity={0.015} />
+          <cylinderGeometry args={[0.19, 0.215, 3.1, 64]} />
+          <meshPhysicalMaterial color="#1e0901" roughness={0.18} metalness={0.06}
+            clearcoat={1.0} clearcoatRoughness={0.03}
+            envMapIntensity={1.6} emissive="#2a0e02" emissiveIntensity={0.018}
+            sheen={0.15} sheenColor="#5a2010" />
         </mesh>
         {/* Upper shaft — tapers toward ferrule */}
         <mesh position={[0, -1.1, 0]} castShadow>
-          <cylinderGeometry args={[0.105, 0.19, 2.0, 52]} />
-          <meshPhysicalMaterial color="#351206" roughness={0.26} metalness={0.02}
-            clearcoat={0.95} clearcoatRoughness={0.05}
-            envMapIntensity={0.9} emissive="#3a1206" emissiveIntensity={0.01} />
+          <cylinderGeometry args={[0.105, 0.19, 2.0, 64]} />
+          <meshPhysicalMaterial color="#280e04" roughness={0.16} metalness={0.06}
+            clearcoat={1.0} clearcoatRoughness={0.03}
+            envMapIntensity={1.8} emissive="#2a0e02" emissiveIntensity={0.014}
+            sheen={0.12} sheenColor="#5a2010" />
         </mesh>
         {/* Wood grain bands — subtle color breaks for grain illusion */}
         {[-3.8, -3.2, -2.5, -1.8, -1.1].map((y, i) => (
@@ -744,18 +766,20 @@ function GavelMesh({ gavelRef, onStrike }) {
         </mesh>
 
         {/* ── HEAD ── */}
-        {/* Main barrel — high-lacquer dark rosewood, slight barrel crown */}
+        {/* Main barrel — ultra-lacquer dark rosewood with metallic sheen */}
         <mesh position={[0, 0.72, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.63, 0.62, 3.18, 80]} />
-          <meshPhysicalMaterial color="#0e0402" roughness={0.18} metalness={0.18}
-            clearcoat={1.0} clearcoatRoughness={0.03}
-            envMapIntensity={2.8} emissive="#1a0804" emissiveIntensity={0.02} />
+          <cylinderGeometry args={[0.63, 0.62, 3.18, 96]} />
+          <meshPhysicalMaterial color="#080200" roughness={0.10} metalness={0.28}
+            clearcoat={1.0} clearcoatRoughness={0.02}
+            envMapIntensity={4.0} emissive="#100400" emissiveIntensity={0.03}
+            sheen={0.08} sheenColor="#3a1008" />
         </mesh>
         {/* Barrel crown (very slight bulge at center) */}
         <mesh position={[0, 0.72, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.638, 0.638, 1.4, 80]} />
-          <meshPhysicalMaterial color="#100502" roughness={0.16} metalness={0.2}
-            clearcoat={1.0} clearcoatRoughness={0.02} envMapIntensity={3.0} />
+          <cylinderGeometry args={[0.638, 0.638, 1.4, 96]} />
+          <meshPhysicalMaterial color="#0a0200" roughness={0.08} metalness={0.32}
+            clearcoat={1.0} clearcoatRoughness={0.01} envMapIntensity={4.5}
+            emissive="#0e0200" emissiveIntensity={0.025} />
         </mesh>
         {/* Left bevel taper 1 */}
         <mesh position={[-1.57, 0.72, 0]} rotation={[0, 0, Math.PI / 2]}>
@@ -926,29 +950,35 @@ function GavelScene({ onStrikeComplete }) {
   return (
     <group ref={sceneRef}>
       {/* ── Lighting ── */}
-      <ambientLight intensity={0.35} color="#fff0e0" />
-      {/* Key light — warm top-right */}
-      <directionalLight position={[6, 18, 8]} intensity={3.6} color="#fff8f0" castShadow
+      <ambientLight intensity={0.28} color="#fff4e8" />
+      {/* Primary key light — warm overhead */}
+      <directionalLight position={[6, 20, 10]} intensity={4.2} color="#fff8f2" castShadow
         shadow-mapSize={[4096, 4096]}
-        shadow-camera-near={0.5} shadow-camera-far={55}
-        shadow-camera-left={-16} shadow-camera-right={16}
-        shadow-camera-top={16} shadow-camera-bottom={-16}
-        shadow-bias={-0.0003} shadow-normalBias={0.02} />
+        shadow-camera-near={0.5} shadow-camera-far={60}
+        shadow-camera-left={-18} shadow-camera-right={18}
+        shadow-camera-top={18} shadow-camera-bottom={-18}
+        shadow-bias={-0.0002} shadow-normalBias={0.018} />
+      {/* Secondary fill — cool from right */}
+      <directionalLight position={[-8, 14, 6]} intensity={1.8} color="#e8f0ff" />
       {/* Burgundy dramatic fill from left */}
-      <spotLight position={[-14, 12, 7]} intensity={5.0} color="#7C1D2B"
-        angle={0.36} penumbra={0.85} castShadow />
-      {/* Gold rim light directly behind gavel */}
-      <pointLight position={[1.8, 2.5, 5]} intensity={3.2} color="#C9A84C" distance={20} decay={2} />
-      {/* Warm backfill */}
-      <pointLight position={[-3.5, -0.5, 5]} intensity={1.2} color="#8B3520" distance={22} decay={2} />
-      {/* Cool overhead for pillars */}
-      <pointLight position={[0, 10, -2]} intensity={1.4} color="#dcdce8" distance={32} decay={1.5} />
-      {/* Under-glow gold bounce */}
-      <pointLight position={[0.3, -3.8, 2.5]} intensity={0.8} color="#C9A84C" distance={14} decay={2} />
-      {/* Left fill to balance */}
-      <pointLight position={[-7, 3, 3]} intensity={0.7} color="#e8d4c0" distance={20} decay={2} />
+      <spotLight position={[-16, 14, 8]} intensity={6.5} color="#7C1D2B"
+        angle={0.32} penumbra={0.9} castShadow />
+      {/* Gold hero rim — right rear behind gavel */}
+      <pointLight position={[2.2, 3.0, 5.5]} intensity={4.5} color="#D4A83A" distance={22} decay={2} />
+      {/* Strong gold floor bounce */}
+      <pointLight position={[0.3, -3.5, 2.8]} intensity={2.0} color="#C9A84C" distance={16} decay={2} />
+      {/* Warm back fill */}
+      <pointLight position={[-4, -0.5, 5]} intensity={1.6} color="#8B4020" distance={24} decay={2} />
+      {/* Cool pillar overhead */}
+      <pointLight position={[0, 12, -2]} intensity={2.0} color="#d8dcf0" distance={38} decay={1.5} />
+      {/* Right fill balance */}
+      <pointLight position={[9, 4, 4]} intensity={1.0} color="#f0e8d8" distance={22} decay={2} />
+      {/* Gold candle warmth on scales */}
+      <pointLight position={[-3.2, -3.0, 2.0]} intensity={1.4} color="#ffb84a" distance={10} decay={2.5} />
+      {/* Books fill */}
+      <pointLight position={[3.4, -3.5, 2.0]} intensity={1.2} color="#ffd080" distance={10} decay={2.5} />
 
-      <Environment preset="warehouse" />
+      <Environment preset="studio" background={false} />
 
       <BackWall />
       <MarbleFloor />
@@ -968,8 +998,9 @@ function GavelScene({ onStrikeComplete }) {
         <meshBasicMaterial color="#C9A84C" transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
-      <Sparkles count={240} scale={22} size={1.4} speed={0.14} color="#C9A84C" opacity={0.32} />
-      <ContactShadows position={[0, -5.14, 0]} opacity={0.85} scale={36} blur={3.5} far={10} color="#1a0a04" />
+      <Sparkles count={320} scale={24} size={1.6} speed={0.12} color="#D4A83A" opacity={0.28} />
+      <Sparkles count={80} scale={12} size={0.8} speed={0.06} color="#ffffff" opacity={0.15} />
+      <ContactShadows position={[0, -5.14, 0]} opacity={0.92} scale={40} blur={2.8} far={12} color="#150804" />
     </group>
   );
 }
@@ -1040,14 +1071,15 @@ export default function HeroSection() {
         {checkWebGL() ? (
           <Canvas
             camera={{ position: [0, 1.5, 13], fov: 42 }}
-            shadows
+            shadows="soft"
             dpr={[1, 2]}
             gl={{
               antialias: true,
               alpha: true,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.15,
+              toneMappingExposure: 1.22,
               powerPreference: 'high-performance',
+              shadowMapType: THREE.PCFShadowMap,
             }}>
             <GavelScene onStrikeComplete={handleStrikeComplete} />
           </Canvas>

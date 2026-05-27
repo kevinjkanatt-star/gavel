@@ -9,8 +9,24 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FFFDF7;
+    background-color: #ffffff;
     color: #171717;
+}
+
+/* Cards and white panels — opaque white so they sit cleanly above the tiled background */
+.card-flat,
+.premium-card {
+    background-color: #ffffff;
+    isolation: isolate;
+}
+
+/* Dropdown menus, dialogs, popovers — must be opaque */
+[data-radix-popper-content-wrapper],
+[role="dialog"],
+[role="menu"],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content] {
+    isolation: isolate;
 }
 
 .font-serif {

@@ -112,14 +112,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const url = `${process.env.PUBLIC_URL}/pattern.png`;
+    const url = `${process.env.PUBLIC_URL}/gold-pattern.png`;
     document.body.style.backgroundImage = `url(${url})`;
     document.body.style.backgroundRepeat = 'repeat';
-    document.body.style.backgroundSize = '120px 120px';
+    document.body.style.backgroundSize = '72px 72px';
+    document.body.style.backgroundColor = '#ffffff';
     return () => {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundRepeat = '';
       document.body.style.backgroundSize = '';
+      document.body.style.backgroundColor = '';
     };
   }, []);
 
